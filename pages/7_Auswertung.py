@@ -3,8 +3,6 @@ import json
 import re
 import smtplib
 from email.message import EmailMessage
-from fpdf import FPDF
-from io import BytesIO
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -106,71 +104,3 @@ if st.button("✨ Jetzt Leitfaden generieren"):
 
     except Exception as e:
         st.error(f"Fehler beim Generieren des Leitfadens: {e}")
-
-# ---------- PDF-Erstellung ----------
-pdf = FPDF()
-pdf.add_page()
-pdf.set_auto_page_break(auto=True, margin=15)
-pdf.add_font("DejaVu", "", "fonts/DejaVuSans.ttf", uni=True)
-pdf.add_font("DejaVu", "B", "fonts/DejaVuSans-Bold.ttf", uni=True)
-
-pdf.set_font("DejaVu", "B", size=14)
-pdf.cell(190, 10, clean_unicode(f"Projekt-Auswertung: {projektname}"), ln=True)
-pdf.ln(5)
-
-pdf.set_font("DejaVu", "", size=11)
-
-kapitel_titel = {
-    "kapitel_1": "Kapitel 1: Spielidee",
-    "kapitel_2": "Kapitel 2: Marke & Markenstrategie",
-    "kapitel_3": "Kapitel 3: Community & Vertrieb",
-    "kapitel_4": "Kapitel 4: Ressourcen & Finanzierung",
-    "kapitel_5": "Kapitel 5: Strategie & Zeitplanung",
-    "kapitel_6": "Kapitel 6: Persönliche Erwartungen & Leitfaden-Nutzen"
-}
-
-for k in sorted(kapitel_titel.keys()):
-    inhalte = daten.get(k, {})
-    titel = kapitel_titel[k]
-
-    pdf.set_font("DejaVu", "B", size=13)
-    pdf.set_text_color(0, 0, 128)
-    pdf.cell(190, 10, clean_unicode(titel), ln=True)
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("DejaVu", "", size=11)
-    pdf.ln(1)
-
-    if not isinstance(inhalte, dict) or not inhalte:
-        pdf.multi_cell(190, 8, "[Keine Daten in diesem Kapitel hinterlegt]")
-        pdf.ln(3)
-        continue
-
-    for key in sorted(inhalte.keys()):
-        key_clean = clean_unicode(key.replace("_", " ").capitalize())
-        val = inhalte[key]
-        val_str = ", ".join(clean_unicode(str(v)) for v in val) if isinstance(val, list) else clean_unicode(str(val))
-        pdf.multi_cell(190, 8, f"{key_clean}: {val_str}")
-
-    pdf.ln(5)
-
-if leitfaden_text:
-    pdf.set_font("DejaVu", "B", size=13)
-    pdf.set_text_color(128, 0, 0)
-    pdf.cell(190, 10, "Kapitel 7: KI-generierter Leitfaden", ln=True)
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("DejaVu", "", size=11)
-    pdf.ln(1)
-    for line in clean_unicode(leitfaden_text).split("\n"):
-        pdf.multi_cell(190, 8, line)
-    pdf.ln(5)
-
-pdf_bytes = BytesIO()
-pdf.output(pdf_bytes)
-pdf_bytes.seek(0)
-
-st.download_button(
-    label="📄 PDF herunterladen",
-    data=pdf_bytes,
-    file_name=f"{projektname}_auswertung.pdf",
-    mime="application/pdf"
-)
