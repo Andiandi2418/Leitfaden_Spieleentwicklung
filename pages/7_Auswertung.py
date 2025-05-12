@@ -87,7 +87,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             "- bei jeder Gelegenheit Beispiele, Templates, Tabellen, Formulierungen, Zeitpläne etc. enthalten\n"
             "- bei Social Media & Contentplanung: auch Textideen, Hashtags, Bildvorschläge, Tools und Veröffentlichungszeitpunkte nennen\n"
             "- alle Kapitel und Unterfragen vollständig beantworten\n\n"
-            "📌 Bitte gliedere deine Ausarbeitung in exakt diese 13 Kapitel (in der Reihenfolge, numeriert, vollständig):\n"
+            "📌 Gliedere deine Ausarbeitung **vollständig und direkt** in exakt diese 13 Kapitel (in der Reihenfolge, nummeriert):\n"
             "1. Situationsanalyse\n"
             "2. Marketingziele (SMART)\n"
             "3. Zielgruppen & Personas\n"
@@ -101,9 +101,8 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             "11. Budget- & Ressourcenplanung\n"
             "12. KPIs & Erfolgskontrolle\n"
             "13. Risikoanalyse & Notfallpläne\n\n"
-            "🔄 Wenn notwendig, teile die Antwort kapitelweise auf, gib aber jedes Kapitel vollständig aus.\n"
-            "Falls du nicht alles auf einmal liefern kannst, beginne mit Kapitel 1 und frage nach Eingabe für das nächste Kapitel.\n\n"
-            "✳️ Abschluss: Erstelle eine strukturierte Zusammenfassung mit Stichpunkten zu:\n"
+            "🔄 **Gib alle Kapitel direkt in einem einzigen, durchgängigen Text aus. Keine Rückfragen, keine Pausen.**\n\n"
+            "✳️ Abschluss: Erstelle am Ende eine strukturierte Zusammenfassung mit Stichpunkten zu:\n"
             "- Wichtigste Marketingziele\n"
             "- Zentrale Maßnahmen & Zeitpunkte\n"
             "- Gewählte Kanäle & Formate\n"
@@ -118,6 +117,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             "Hier sind alle relevanten Angaben zum Projekt:\n\n"
             + "\n".join(alle_antworten)
         )
+
 
 
         response = client.chat.completions.create(
