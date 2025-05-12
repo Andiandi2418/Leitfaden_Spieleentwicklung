@@ -74,7 +74,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             else:
                 alle_antworten.append(str(inhalte))
 
-           prompt = (
+        prompt = (
                 "Du bist ein hochspezialisierter Marketingstratege, Vertriebsexperte und Finanzplaner mit Fokus auf analoge Spiele. "
                 "Deine Aufgabe ist es, auf Basis der unten stehenden Projektdaten ein vollständiges, kreatives und operativ umsetzbares Marketing-, Vertriebs- und Finanzierungs­konzept "
                 "für das neue Brettspiel zu entwickeln – mit maximalem inhaltlichem Mehrwert und aktiver Eigenleistung deinerseits.\n\n"
