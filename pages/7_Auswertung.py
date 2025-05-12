@@ -90,7 +90,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             f.write(prompt)
 
         sende_per_mail(prompt_dateipfad)
-        st.success("📧 Die Datei wurde automatisch an meinspieleleitfaden@gmail.com gesendet.")
+        #st.success("📧 Die Datei wurde automatisch an meinspieleleitfaden@gmail.com gesendet.")
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
