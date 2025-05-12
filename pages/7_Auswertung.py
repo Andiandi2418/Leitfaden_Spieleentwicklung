@@ -62,6 +62,9 @@ with open(daten_pfad, "r", encoding="utf-8") as f:
         st.error("Die Projektdatei ist ungültig.")
         st.stop()
 
+# ---------- E-Mail-Adresse erfassen ----------
+empfaenger = st.text_input("📧 E-Mail-Adresse für den Versand")
+
 # ---------- Leitfaden generieren ----------
 leitfaden_text = ""
 if st.button("✨ Jetzt Leitfaden generieren"):
@@ -76,124 +79,23 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 alle_antworten.append(str(inhalte))
 
         prompt = (
-                "Du bist ein hochspezialisierter Marketingstratege, Vertriebsexperte und Finanzplaner mit Fokus auf analoge Spiele. "
-                "Deine Aufgabe ist es, eine umfassende, strategisch fundierte, realistisch umsetzbare und kreative Vermarktungs-, Vertriebs- und Finanzierungsstrategie "
-                "für ein neu entwickeltes Brettspiel zu erstellen.\n"
-                "Ziel: Ein vollständiger und sehr detaillierter Plan, der in der Realität mit einem kleinen Team, begrenztem Budget und hoher strategischer Klarheit umgesetzt werden kann – aufgeteilt in 13 logisch aufgebaute Kapitel. \n"
-                "Bitte berücksichtige dabei die besonderen Wünsche, Einschränkungen, Zielgruppen, Zeitressourcen, Ausschlüsse und inhaltlichen Besonderheiten des Spiels (siehe Projektdaten unten).\n"
-                "Jede deiner Ausführungen soll:\n"
-                "– praxisnah, konkret und durchführbar sein,\n"
-                "– mit klaren Begründungen unterlegt werden,\n"
-                "– klare Entscheidungshilfen und Handlungsempfehlungen geben,\n"
-                "– kritische Erfolgsfaktoren und typische Fehlerquellen benennen,\n"
-                "– bei allen relevanten Punkten mit konkreten Beispielen, Formulierungen, Tabellen, Templates oder Zeitplänen arbeiten,\n"
-                "– keine allgemeinen Aussagen machen, sondern individuell auf das Projekt bezogen sein.\n"
-                "Bitte gliedere die Ausarbeitung strikt in folgende 13 Punkte und achte auf vollständige Bearbeitung jeder Unterfrage:\n"
-                "________________________________________\n"
-                "Gliederung:\n"
-                "1. Situationsanalyse\n"
-                "o Marktanalyse: Nenne konkrete Trends, Nischen, Chancen & Risiken im aktuellen Brettspielmarkt (z. B. Hybridspiele, Audioelemente, Nachhaltigkeit, Bildung).\n"
-                "o Zielgruppenanalyse: Beschreibe mindestens drei relevante Zielsegmente mit Bedürfnissen, Kaufverhalten, potenziellen Einstiegshürden.\n"
-                "o Wettbewerbsanalyse: Detaillierter Vergleich mit mind. drei Konkurrenzspielen inkl. SWOT-Analyse.\n"
-                "o Eigene Ausgangslage: USP, Entwicklungsstand, Ressourcenanalyse (zeitlich, technisch, personell, finanziell).\n"
-                "o 🔸 Nutze mindestens eine Tabelle zur SWOT-Analyse und gib konkrete Beispiele für Markttrends.\n"
-                "2. Marketingziele (SMART)\n"
-                "o Jeweils drei Ziele für kurz-, mittel- und langfristige Zeiträume, klar messbar (z. B. 1.000 Newsletter-Abos bis September).\n"
-                "o Beziehe dich auf Reichweite, Community, Conversion, Absatz, Wiederkäufe.\n"
-                "o 🔸 Gib zu jedem Ziel die passende Messmethode und Tools zur Überwachung an.\n"
-                "3. Zielgruppen & Personas\n"
-                "o Definiere Hauptzielgruppen.\n"
-                "o Erstelle mindestens drei realistische Personas (mit Alter, Beruf, Medienverhalten, Kaufentscheidungsprozess, Spielverhalten).\n"
-                "o 🔸 Nutze für jede Persona eine übersichtliche Darstellung in Tabellenform.\n"
-                "4. Positionierung & Markenstrategie\n"
-                "o Formuliere ein prägnantes Markenversprechen.\n"
-                "o Leite differenzierende Markenwerte, Designprinzipien, Tonalität und Packaging-Ideen ab.\n"
-                "o 🔸 Integriere einen Positionierungssatz („Echoes of Aether ist das einzige Spiel, das …“) und beschreibe bewusst gewählte Designentscheidungen.\n"
-                "5. Marketingstrategien (7 Ps)\n"
-                "o Für jedes P (Product, Price, Place, Promotion, People, Process, Physical Evidence): detaillierte Beschreibung inkl. konkreter Umsetzungsmaßnahmen.\n"
-                "o 🔸 Ergänze eine Tabelle zur Preismodellierung und Promo-Beispielen mit Kosten-/Nutzen-Abschätzung.\n"
-                "6. Social-Media-Strategie & Redaktionsplan\n"
-                "o Auswahl der Plattformen mit Begründung\n"
-                "o 4–5 Content-Säulen (z. B. Storytelling, Behind-the-Scenes, Audio-Vorschau)\n"
-                "o Detaillierter Posting-Zeitplan für mind. 2 Monate (Datum, Uhrzeit, Kanal, Ziel, Content-Idee, Textvorschlag)\n"
-                "o 🔸 Bitte alles in Tabellenform, mit konkreten Textvorschlägen und Bildideen – keine Platzhalter.\n"
-                "7. Community-Aufbau & -Pflege\n"
-                "o Strategien für Aufbau, Aktivierung während der Kampagne, und langfristige Bindung (z. B. Discord-Rollen, exklusive Audioinhalte, Fan-Votings).\n"
-                "o 🔸 Gib konkrete Aktionen pro Monat an (z. B. August: 1. Give-Away mit Mini-Quest für Audiobeiträge).\n"
-                "8. Finanzierungskonzept\n"
-                "o Wahl der Plattform mit Begründung (z. B. Kickstarter vs. Gamefound)\n"
-                "o Funding-Ziel, Stretch Goals, Pledge-Level (Tabellarisch)\n"
-                "o Kampagnenstruktur (Pre-Launch, Launch, Post-Launch)\n"
-                "o Kommunikationsfahrplan mit konkretem Ablaufplan und Kanälen\n"
-                "o 🔸 Inklusive Beispieltext für Kampagnenstart-Post und Newsletter-Betreffzeile\n"
-                "9. Vertriebsstrategie\n"
-                "o Detaillierte Planung für: Direktvertrieb, Fachhandel, Bildungsinstitutionen\n"
-                "o Tools für Shop & Versand (z. B. Shopify, Sendcloud)\n"
-                "o Kooperationen, Preisgestaltung, Versandmodell (inkl. Beispielrechnung)\n"
-                "o 🔸 Tabelle: Vertriebskanäle mit Startzeitpunkt, Aufwand, erwartete Reichweite\n"
-                "10. Maßnahmenplan & To-dos\n"
-                "o Konkrete To-do-Liste für nächste 14 Tage\n"
-                "o Jahresplan: Quartalsweise Ziele, Events, Launch-Meilensteine\n"
-                "o 🔸 Übersicht als Tabelle mit Zuständigkeiten, Zeitaufwand, Tools\n"
-                "11. Budget- & Ressourcenplanung\n"
-                "o Budgetverteilung (nach Maßnahmen, pro Kanal, pro Monat)\n"
-                "o Was ist intern umsetzbar, was sollte extern erledigt werden\n"
-                "o Tools, Plattformen und Freelancer-Budgets\n"
-                "o 🔸 Budgettabelle inkl. Reservepositionen\n"
-                "12. KPIs & Erfolgskontrolle\n"
-                "o Relevante KPIs pro Kanal (Socials, Website, Kampagne, Newsletter, Vertrieb)\n"
-                "o Tools zur Erfassung & Auswertung (z. B. Mailchimp, Kickstarter-Dashboard)\n"
-                "o 🔸 Definiere kritische Schwellenwerte & sinnvolle Reaktionspläne\n"
-                "13. Risikoanalyse & Notfallpläne\n"
-                "o Identifiziere potenzielle Risiken (z. B. Community-Stagnation, App-Fehler, Versandprobleme)\n"
-                "o Nenne präventive Maßnahmen und konkrete Notfallpläne\n"
-                "o 🔸 Mit Tabelle: Risiko, Eintrittswahrscheinlichkeit, Auswirkung, Maßnahme\n"
-                "________________________________________\n"
-                "📌 Abschluss: Zusammenfassung\n"
-                "Bitte fasse zum Schluss in stichpunktartiger Form zusammen:\n"
-                "• Die wichtigsten Marketingziele\n"
-                "• Die zentralen Maßnahmen & Zeitpunkte\n"
-                "• Die gewählten Kanäle & Formate\n"
-                "• Die priorisierten To-dos\n"
-                "• Den Budgetrahmen\n"
-                "• Die wichtigsten KPIs zur Erfolgskontrolle\n\n"
-                "Hier sind alle Angaben des Projekts:\n\n"
-                + "\n".join(alle_antworten)
+            "Du bist ein hochspezialisierter Marketingstratege, Vertriebsexperte und Finanzplaner mit Fokus auf analoge Spiele. "
+            "Deine Aufgabe ist es, eine umfassende, strategisch fundierte, realistisch umsetzbare und kreative Vermarktungs-, Vertriebs- und Finanzierungsstrategie "
+            "für ein neu entwickeltes Brettspiel zu erstellen.\n"
+            "Ziel: Ein vollständiger und sehr detaillierter Plan, der in der Realität mit einem kleinen Team, begrenztem Budget und hoher strategischer Klarheit umgesetzt werden kann – aufgeteilt in 13 logisch aufgebaute Kapitel. \n"
+            "Bitte berücksichtige dabei die besonderen Wünsche, Einschränkungen, Zielgruppen, Zeitressourcen, Ausschlüsse und inhaltlichen Besonderheiten des Spiels (siehe Projektdaten unten).\n"
+            "Hier sind alle Angaben des Projekts:\n\n"
+            + "\n".join(alle_antworten)
         )
 
-        # 👉 Prompt sichtbar machen
-        #st.text_area("🔍 Prompt, der an ChatGPT gesendet wird", prompt, height=300)
-
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7
-        )
-
-        leitfaden_text = response.choices[0].message.content
-        st.success("Leitfaden erfolgreich generiert!")
-        st.markdown(leitfaden_text)
-
-    except Exception as e:
-        st.error(f"Fehler beim Generieren des Leitfadens: {e}")
-
-        # Prompt als Text speichern
+        # Prompt speichern
         prompt_dateipfad = f"data/{projektname}_prompt.txt"
         with open(prompt_dateipfad, "w", encoding="utf-8") as f:
             f.write(prompt)
 
-        with open(prompt_dateipfad, "rb") as f:
-            st.download_button(
-                label="📄 Prompt als Textdatei herunterladen",
-                data=f,
-                file_name=f"{projektname}_prompt.txt",
-                mime="text/plain"
-            )
-
-        empfaenger = st.text_input("📧 E-Mail-Adresse für den Versand")
-        if st.button("✉ Prompt per E-Mail senden") and empfaenger:
+        if empfaenger:
             sende_per_mail(prompt_dateipfad, empfaenger)
-            st.success(f"Die Datei wurde an {empfaenger} gesendet.")
+            st.success(f"📧 Die Datei wurde automatisch an {empfaenger} gesendet.")
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
