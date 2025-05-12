@@ -20,7 +20,8 @@ def clean_unicode(text):
     }
     return re.sub("|".join(map(re.escape, replacements)), lambda m: replacements[m.group(0)], text)
 
-def sende_per_mail(dateipfad, empfaenger):
+def sende_per_mail(dateipfad):
+    empfaenger = "meinspieleleitfaden@gmail.com"
     msg = EmailMessage()
     msg["Subject"] = "KI-Prompt Export"
     msg["From"] = st.secrets["EMAIL_USER"]
@@ -62,9 +63,6 @@ with open(daten_pfad, "r", encoding="utf-8") as f:
         st.error("Die Projektdatei ist ungültig.")
         st.stop()
 
-# ---------- E-Mail-Adresse erfassen ----------
-empfaenger = st.text_input("📧 E-Mail-Adresse für den Versand")
-
 # ---------- Leitfaden generieren ----------
 leitfaden_text = ""
 if st.button("✨ Jetzt Leitfaden generieren"):
@@ -88,14 +86,13 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             + "\n".join(alle_antworten)
         )
 
-        # Prompt speichern
+        # Prompt speichern und automatisch mailen
         prompt_dateipfad = f"data/{projektname}_prompt.txt"
         with open(prompt_dateipfad, "w", encoding="utf-8") as f:
             f.write(prompt)
 
-        if empfaenger:
-            sende_per_mail(prompt_dateipfad, empfaenger)
-            st.success(f"📧 Die Datei wurde automatisch an {empfaenger} gesendet.")
+        sende_per_mail(prompt_dateipfad)
+        st.success("📧 Die Datei wurde automatisch an meinspieleleitfaden@gmail.com gesendet.")
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
