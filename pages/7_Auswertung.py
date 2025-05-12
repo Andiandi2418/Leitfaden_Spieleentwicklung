@@ -159,7 +159,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 "Hier sind alle Angaben des Projekts:\n\n"
                 + "\n".join(alle_antworten)
 
-
+        )
 
         response = client.chat.completions.create(
             model="gpt-4o",
