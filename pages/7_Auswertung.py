@@ -75,49 +75,37 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 alle_antworten.append(str(inhalte))
 
         prompt = (
-                "Du bist ein hochspezialisierter Marketingstratege, Vertriebsexperte und Finanzplaner mit Fokus auf analoge Spiele. "
-                "Deine Aufgabe ist es, auf Basis der unten stehenden Projektdaten ein vollständiges, kreatives und operativ umsetzbares Marketing-, Vertriebs- und Finanzierungs­konzept "
-                "für das neue Brettspiel zu entwickeln – mit maximalem inhaltlichem Mehrwert und aktiver Eigenleistung deinerseits.\n\n"
-                "Ziel: Ein detaillierter, ideenreicher und umsetzungsorientierter Masterplan mit smartem Zeitplan, realistischem Budgetrahmen, wirkungsvollen Kanälen und konkreten Inhalten. "
-                "Dieser Masterplan muss **über die Projektbeschreibung hinausdenken** und eigenständige, realistische, kreative und passende Vorschläge liefern. "
-                "Wiederholungen aus der Beschreibung sind zu vermeiden – stattdessen sollen auf dieser Basis konkrete Maßnahmen, Posts, Tools, Texte, Visuals und KPIs entstehen.\n\n"
-                "⚠️ Deine Ausarbeitung muss …\n"
-                "- ausnahmslos **konkret, umsetzbar, terminiert und realistisch** sein\n"
-                "- **kreative eigene Ideen** liefern, z. B. für Instagram-Stories, Audioformate, Kooperationen, Texte, Hashtags, Events, Storytelling, Stretch Goals, Presseansprachen etc.\n"
-                "- **Inhalte datumsbezogen als Tabelle auflisten**, z. B. (11.05., Instagram Story, Muttertagsspecial: „Jetzt gemeinsam mit der Familie Lumora entdecken.“)\n"
-                "- **Social-Media-Content konkret vorschlagen** (inkl. Bildideen, Hashtags, Tools, Veröffentlichungszeitpunkt)\n"
-                "- **Personas adressieren** mit zugeschnittenen Maßnahmen\n"
-                "- **ein echtes Finanzierungskonzept liefern**, das Förderprogramme, Crowdfunding, Stretch Goals, Preismodelle und Puffer berücksichtigt\n"
-                "- **alle Kapitel vollständig ausarbeiten**, numeriert nach folgender Liste\n\n"
-                "📌 Gib die folgenden 13 Kapitel **direkt, lückenlos und in der angegebenen Reihenfolge** aus (nummeriert):\n"
-                "1. Situationsanalyse\n"
-                "2. Marketingziele (SMART)\n"
-                "3. Zielgruppen & Personas\n"
-                "4. Positionierung & Markenstrategie\n"
-                "5. Marketingstrategien (7 Ps)\n"
-                "6. Social-Media-Strategie & Redaktionsplan\n"
-                "7. Community-Aufbau & -Pflege\n"
-                "8. Finanzierungskonzept\n"
-                "9. Vertriebsstrategie\n"
-                "10. Maßnahmenplan & To-dos\n"
-                "11. Budget- & Ressourcenplanung\n"
-                "12. KPIs & Erfolgskontrolle\n"
-                "13. Risikoanalyse & Notfallpläne\n\n"
-                "✳️ Am Ende folgt eine strukturierte **Zusammenfassung mit Stichpunkten zu**:\n"
-                "- Wichtigste Marketingziele\n"
-                "- Zentrale Maßnahmen & Zeitpunkte\n"
-                "- Gewählte Kanäle & Formate\n"
-                "- Priorisierte To-dos\n"
-                "- Budgetrahmen\n"
-                "- KPIs zur Erfolgskontrolle\n\n"
-                "🎯 Erinnere dich durchgehend an folgende Regeln:\n"
-                "→ **Nichts darf vage sein.**\n"
-                "→ **Keine Wiederholung der Eingaben.**\n"
-                "→ **Keine allgemeinen Formulierungen.**\n"
-                "→ **Alles muss mitdenken, auf das Projekt zugeschnitten und originell sein.**\n\n"
-                "Hier sind alle relevanten Angaben zum Projekt:\n\n"
-                + "\n".join(alle_antworten)
-            )
+            "Erstelle eine konkrete, umsetzbare und kreative Vermarktungs-, Vertriebs- und Finanzierungsstrategie für ein neues Brettspiel. "
+            "Ziel ist ein realistischer, direkt umsetzbarer Plan mit originellen Ideen, Zeitplänen, Textvorschlägen, Finanzierungsstrategien und Community-Maßnahmen.\n\n"
+            
+            "⚠️ Verwende die folgenden Projektangaben aktiv für alle Inhalte. Sie sind vollständig ausgefüllt und enthalten wichtige Informationen, auf denen deine Vorschläge aufbauen sollen. "
+            "Entwickle daraus eigenständig Ideen, Inhalte, Zeitpläne und Konzepte – keine Wiederholungen oder allgemeinen Aussagen.\n\n"
+        
+            "✅ Deine Antwort soll beinhalten:\n"
+            "- realistische Social-Media-Posts mit Datum, Text, Bildideen, Hashtags\n"
+            "- Vorschläge für Community-Aktionen und Audio-Formate\n"
+            "- konkrete Finanzierungsstrategie mit mehreren Bausteinen\n"
+            "- Tabellen mit To-dos und Redaktionsplan\n\n"
+            
+            "📌 Gliedere deine Antwort in diese Kapitel:\n"
+            "1. Situationsanalyse\n"
+            "2. Marketingziele\n"
+            "3. Zielgruppen & Personas\n"
+            "4. Markenstrategie\n"
+            "5. Marketingmaßnahmen\n"
+            "6. Social-Media-Plan (inkl. Tabelle mit konkreten Inhalten und Terminen)\n"
+            "7. Community-Aufbau\n"
+            "8. Finanzierungskonzept\n"
+            "9. Vertriebsstrategie\n"
+            "10. To-do-Plan (mit Terminen)\n"
+            "11. Budgetplanung\n"
+            "12. Erfolgskontrolle\n"
+            "13. Risiken & Lösungen\n\n"
+            
+            "Hier sind die Projektdaten:\n\n"
+            + "\n".join(alle_antworten)
+        )
+
 
 
 
