@@ -92,7 +92,7 @@ st.markdown("#### 🔶 Markenpräsenz & Wiedererkennung")
 st.markdown('<div class="frage-label">Wo ist deine Marke heute sichtbar?</div>', unsafe_allow_html=True)
 st.multiselect("", ["Website", "Instagram", "YouTube", "Facebook", "TikTok", "Presseartikel", "Messen", "Podcast", "Anderswo"],
                default=st.session_state.get("sichtbarkeit", []), key="sichtbarkeit")
-nutzung_andere = st.text_input("→ Wenn 'Anderswo': Bitte hier eintragen", value=st.session_state.get("nutzung_andere_marke", ""), key="nutzung_andere")
+nutzung_andere = st.text_input("→ Wenn 'Anderswo': Bitte hier eintragen", value=st.session_state.get("nutzung_andere_marke", ""), key="nutzung_andere_marke")
 
 st.markdown('<div class="frage-label">An welchen Messen oder Events nimmst du teil?</div>', unsafe_allow_html=True)
 st.text_input("", value=st.session_state.get("messen", ""), key="messen")
