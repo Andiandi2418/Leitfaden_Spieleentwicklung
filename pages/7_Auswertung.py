@@ -77,10 +77,31 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             else:
                 alle_antworten.append(str(inhalte))
 
-        with open("prompt_basis.txt", "r", encoding="utf-8") as pfile:
-            prompt_basis = pfile.read()
-
-        prompt = prompt_basis + "\n\n" + "\n".join(alle_antworten)
+        prompt = (
+            "Du bist ein hochspezialisierter Marketingstratege, Vertriebsexperte und Finanzplaner mit Fokus auf analoge Spiele. "
+            "Deine Aufgabe ist es, eine umfassende, strategisch fundierte, realistisch umsetzbare und kreative Vermarktungs-, Vertriebs- und Finanzierungsstrategie "
+            "für ein neu entwickeltes Brettspiel zu erstellen.\n"
+            "Ziel: Ein vollständiger und sehr detaillierter Plan, der in der Realität mit einem kleinen Team, begrenztem Budget und hoher strategischer Klarheit umgesetzt werden kann – aufgeteilt in 13 logisch aufgebaute Kapitel. \n"
+            "Bitte berücksichtige dabei die besonderen Wünsche, Einschränkungen, Zielgruppen, Zeitressourcen, Ausschlüsse und inhaltlichen Besonderheiten des Spiels (siehe Projektdaten unten).\n"
+            "❗Wichtig: Wenn aus den Projektdaten Einschränkungen hervorgehen – etwa der Ausschluss von bestimmten Finanzierungsformen wie Kickstarter oder Gamefound, "
+            "oder der bewusste Verzicht auf bestimmte Kommunikations- oder Vertriebskanäle –, darfst du diese Optionen nicht empfehlen oder einplanen. "
+            "Halte dich strikt an die ausgewählten oder ausgeschlossenen Optionen aus dem Projekt.\n"
+            "❗Wichtig: Bitte bearbeite jedes der 13 Kapitel möglichst unabhängig voneinander. "
+            "Einschränkungen wie Zeit, Budget oder Know-how dürfen nur dann berücksichtigt werden, wenn sie direkt im jeweiligen Kapitel relevant sind. "
+            "Vermeide Rückschlüsse von einem Bereich auf einen völlig anderen (z. B. Ressourcen auf die Wettbewerbsanalyse). "
+            "Analysiere objektiv und vollständig – auch wenn die Projektangaben auf begrenzte Mittel hindeuten.\n"
+            "Jede deiner Ausführungen soll:\n"
+            "– praxisnah, konkret und durchführbar sein,\n"
+            "– mit klaren Begründungen unterlegt werden,\n"
+            "– klare Entscheidungshilfen und Handlungsempfehlungen geben,\n"
+            "– kritische Erfolgsfaktoren und typische Fehlerquellen benennen,\n"
+            "– bei allen relevanten Punkten mit konkreten Beispielen, Formulierungen, Tabellen, Templates oder Zeitplänen arbeiten,\n"
+            "– keine allgemeinen Aussagen machen, sondern individuell auf das Projekt bezogen sein.\n"
+            "Bitte gliedere die Ausarbeitung strikt in folgende 13 Punkte und achte auf vollständige Bearbeitung jeder Unterfrage:\n"
+            "[... GANZER PROMPTTEXT WIE BEREITS VON DIR DEFINIERT ...]\n"
+            "Hier sind alle Angaben des Projekts:\n\n"
+            + "\n".join(alle_antworten)
+        )
 
         response = client.chat.completions.create(
             model="gpt-4o",
