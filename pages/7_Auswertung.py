@@ -93,7 +93,8 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 "1. Situationsanalyse\n"
                 "o Marktanalyse: Nenne konkrete Trends, Nischen, Chancen & Risiken im aktuellen Brettspielmarkt (z. B. Hybridspiele, Audioelemente, Nachhaltigkeit, Bildung).\n"
                 "o Zielgruppenanalyse: Beschreibe mindestens drei relevante Zielsegmente mit Bedürfnissen, Kaufverhalten, potenziellen Einstiegshürden.\n"
-                "o Wettbewerbsanalyse: Detaillierter Vergleich mit mind. drei Konkurrenzspielen inkl. SWOT-Analyse.\n"
+                "o Wettbewerbsanalyse: Bitte analysiere mindestens drei neue, externe Konkurrenzspiele, die dem Konzept ähneln, aber *nicht bereits in den Projektdaten (z. B. aus Frage 55)* genannt wurden. Gib zu jedem Spiel eine SWOT-Analyse in Tabellenform an.
+                \n"
                 "o Eigene Ausgangslage: USP, Entwicklungsstand, Ressourcenanalyse (zeitlich, technisch, personell, finanziell).\n"
                 "o 🔸 Nutze mindestens eine Tabelle zur SWOT-Analyse und gib konkrete Beispiele für Markttrends.\n"
                 "2. Marketingziele (SMART)\n"
