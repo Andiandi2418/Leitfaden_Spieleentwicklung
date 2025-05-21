@@ -136,7 +136,7 @@ nutzung = st.multiselect(
     key="nutzung"
 )
 
-nutzung_andere = st.text_input("→ Wenn 'Andere': Bitte hier eintragen", value=st.session_state.get("nutzung_andere", ""), key="nutzung_andere")
+nutzung_andere = st.text_input("→ Wenn 'Andere': Bitte hier eintragen", value=st.session_state.get("nutzung_andere_k1", ""), key="nutzung_andere_k1")
 
 # ---------- Speichern und Weiter ----------
 st.markdown("---")
@@ -157,7 +157,7 @@ with col2:
                 "solo_modus": st.session_state.get("solo_modus", False),
                 "spieldauer": st.session_state.get("spieldauer", 60),
                 "nutzung": st.session_state.get("nutzung", []),
-                "nutzung_andere": st.session_state.get("nutzung_andere", "")
+                "nutzung_andere": st.session_state.get("nutzung_andere_k1", "")
             }
         }
 
