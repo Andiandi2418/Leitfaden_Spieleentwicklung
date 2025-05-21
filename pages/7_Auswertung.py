@@ -208,11 +208,11 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         pdf.output(leitfaden_bytes)
         leitfaden_bytes.seek(0)
 
-    st.download_button(
-        label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
-        data=leitfaden_bytes,
-        file_name=f"{projektname}_leitfaden.pdf",
-        mime="application/pdf"
+        st.download_button(
+            label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
+            data=leitfaden_bytes,
+            file_name=f"{projektname}_leitfaden.pdf",
+            mime="application/pdf"
     )
 
     
