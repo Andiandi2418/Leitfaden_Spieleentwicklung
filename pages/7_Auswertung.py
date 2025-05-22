@@ -161,7 +161,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 "• Den Budgetrahmen\n"
                 "• Die wichtigsten KPIs zur Erfolgskontrolle\n\n"
                 "Hier sind alle Angaben des Projekts:\n\n"
-                + \"\\n\".join(alle_antworten)
+                + "\n".join(alle_antworten)
         )
 
         response = client.chat.completions.create(
