@@ -162,7 +162,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 "• Die wichtigsten KPIs zur Erfolgskontrolle\n\n"
                 "Hier sind alle Angaben des Projekts:\n\n"
                 + \"\\n\".join(alle_antworten)
-        )
+            )
 
         )
 
