@@ -204,7 +204,7 @@ def remove_non_latin1(text):
 # Funktion zum Darstellen schöner Tabellen mit Umbruch
 def render_table(pdf, table_lines):
     header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
-    data_rows = [line for line in table_lines[2:] if "|" in line and line.count("|") > 2]  # Überspringe Trennerzeile
+    data_rows = [line for line in table_lines[2:] if "|" in line and line.count("|") > 2]
 
     col_width = (pdf.w - 20) / len(header)
 
@@ -221,13 +221,10 @@ def render_table(pdf, table_lines):
         y_start = pdf.get_y()
 
         max_height = 0
-        cell_heights = []
 
         for cell in cells:
             lines = pdf.multi_cell(col_width, 5, cell, border=0, align="L", split_only=True)
-            height = 5 * len(lines)
-            cell_heights.append(height)
-            max_height = max(max_height, height)
+            max_height = max(max_height, 5 * len(lines))
 
         for i, cell in enumerate(cells):
             x = x_start + col_width * i
@@ -236,56 +233,48 @@ def render_table(pdf, table_lines):
 
         pdf.set_y(y_start + max_height)
 
-# Generiere PDF bei Klick auf Button
-if st.session_state.leitfaden_text and st.button("📄 PDF aus Leitfaden erzeugen"):
-    try:
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.set_font("Arial", "B", size=14)
-        pdf.cell(0, 10, remove_non_latin1("📘 KI-generierter Leitfaden"), ln=True)
-        pdf.ln(5)
-        pdf.set_font("Arial", "", size=11)
+# Direktdownload des PDFs nach Buttonklick
+if st.session_state.leitfaden_text:
+    leitfaden_text = st.session_state.leitfaden_text
+    if st.button("📄 PDF aus Leitfaden erzeugen"):
+        try:
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.set_font("Arial", "B", size=14)
+            pdf.cell(0, 10, remove_non_latin1("📘 KI-generierter Leitfaden"), ln=True)
+            pdf.ln(5)
+            pdf.set_font("Arial", "", size=11)
 
-        lines = st.session_state.leitfaden_text.split("\n")
-        table_buffer = []
+            lines = leitfaden_text.split("\n")
+            table_buffer = []
 
-        for line in lines:
-            if "|" in line and line.count("|") >= 2:
-                table_buffer.append(line)
-            elif table_buffer:
+            for line in lines:
+                if "|" in line and line.count("|") >= 2:
+                    table_buffer.append(line)
+                elif table_buffer:
+                    render_table(pdf, table_buffer)
+                    table_buffer = []
+                    cleaned = remove_non_latin1(line)
+                    pdf.multi_cell(0, 8, cleaned)
+                else:
+                    cleaned = remove_non_latin1(line)
+                    pdf.multi_cell(0, 8, cleaned)
+
+            if table_buffer:
                 render_table(pdf, table_buffer)
-                table_buffer = []
-                cleaned = remove_non_latin1(line)
-                pdf.multi_cell(0, 8, cleaned)
-            else:
-                cleaned = remove_non_latin1(line)
-                pdf.multi_cell(0, 8, cleaned)
 
-        if table_buffer:
-            render_table(pdf, table_buffer)
+            leitfaden_bytes = BytesIO()
+            pdf.output(leitfaden_bytes, "F")
+            leitfaden_bytes.seek(0)
 
-        leitfaden_bytes = BytesIO()
-        pdf.output(leitfaden_bytes)
-        leitfaden_bytes.seek(0)
-
-        # Speichere für späteren Download
-        st.session_state.pdf_ready = True
-        st.session_state.pdf_bytes = leitfaden_bytes
-        st.success("✅ PDF erfolgreich erstellt. Jetzt herunterladen:")
-
-    except Exception as e:
-        st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
-
-# Download-Button nur anzeigen, wenn PDF bereits erstellt wurde
-if st.session_state.get("pdf_ready") and st.session_state.get("pdf_bytes"):
-    st.download_button(
-        label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
-        data=st.session_state.pdf_bytes,
-        file_name="leitfaden.pdf",
-        mime="application/pdf",
-        key="download_leitfaden_pdf"
-    )
+            st.download_button(
+                label="⬇️ KI-Leitfaden als PDF herunterladen",
+                data=leitfaden_bytes,
+                file_name="leitfaden.pdf",
+                mime="application/pdf",
+                key="download_leitfaden"
+            )
 
         except Exception as e:
             st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
