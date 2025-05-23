@@ -238,5 +238,5 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             mime="application/pdf"
         )
 
-    except Exception as e:
-        st.error(f"Fehler beim Generieren oder Senden: {e}")
+        except Exception as e:
+            st.error(f"Fehler beim Generieren oder Senden: {e}")
