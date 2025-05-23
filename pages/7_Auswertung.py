@@ -195,7 +195,6 @@ import unicodedata
 def remove_non_latin1(text):
     return ''.join(c for c in text if ord(c) < 256)
 
-
 # ---------- Ausgabe und PDF ----------
 if st.session_state.leitfaden_text:
     st.markdown(st.session_state.leitfaden_text)
@@ -207,7 +206,8 @@ if st.session_state.leitfaden_text:
             pdf.set_auto_page_break(auto=True, margin=15)
 
             pdf.set_font("Arial", "B", size=14)
-            pdf.cell(0, 10, "📘 KI-generierter Leitfaden", ln=True)
+            title = remove_non_latin1("📘 KI-generierter Leitfaden")
+            pdf.cell(0, 10, title, ln=True)
             pdf.ln(5)
 
             pdf.set_font("Arial", "", size=11)
@@ -215,9 +215,8 @@ if st.session_state.leitfaden_text:
                 cleaned = remove_non_latin1(line)
                 pdf.multi_cell(0, 8, cleaned)
 
-            # PDF als String erzeugen
-            pdf_string = pdf.output(dest='S').encode('latin-1')
-            leitfaden_bytes = BytesIO(pdf_string)
+            pdf_bytes = pdf.output(dest='S').encode('latin-1')
+            leitfaden_bytes = BytesIO(pdf_bytes)
 
             st.download_button(
                 label="⬇️ PDF jetzt herunterladen",
