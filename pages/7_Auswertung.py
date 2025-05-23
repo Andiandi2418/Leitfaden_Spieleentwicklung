@@ -8,7 +8,7 @@ from openai import OpenAI
 import streamlit as st
 from fpdf import FPDF
 from io import BytesIO
-import fitz  # PyMuPDF
+import fitz  # PDF lesen
 
 # ---------- Hilfsfunktionen ----------
 def clean_unicode(text):
@@ -41,7 +41,40 @@ def sende_per_mail(dateipfad):
         smtp.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASS"])
         smtp.send_message(msg)
 
-# ---------- Streamlit App ----------
+def render_table(pdf, table_lines):
+    header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
+    data_rows = [line for line in table_lines[1:] if "|" in line and line.count("|") > 2]
+    col_width = (pdf.w - 20) / len(header)
+
+    pdf.set_font("Arial", "B", 10)
+    for cell in header:
+        pdf.cell(col_width, 8, cell, border=1, align="C")
+    pdf.ln()
+
+    pdf.set_font("Arial", "", 10)
+    for row in data_rows:
+        cells = [remove_non_latin1(cell.strip()) for cell in row.split("|")[1:-1]]
+
+        x_start = pdf.get_x()
+        y_start = pdf.get_y()
+
+        max_height = 0
+        cell_heights = []
+
+        for cell in cells:
+            lines = pdf.multi_cell(col_width, 5, cell, border=0, align="L", split_only=True)
+            height = 5 * len(lines)
+            cell_heights.append(height)
+            max_height = max(max_height, height)
+
+        for i, cell in enumerate(cells):
+            x = x_start + col_width * i
+            pdf.set_xy(x, y_start)
+            pdf.multi_cell(col_width, 5, cell, border=1, align="L")
+
+        pdf.set_y(y_start + max_height)
+
+# ---------- Setup ----------
 st.set_page_config(page_title="Kapitel 7: Auswertung", layout="wide")
 st.title("Kapitel 7: Auswertung deines Spiels")
 
@@ -70,10 +103,9 @@ with open(daten_pfad, "r", encoding="utf-8") as f:
         st.error("Die Projektdatei ist ungültig.")
         st.stop()
 
-# ---------- Button: Leitfaden generieren ----------
+# ---------- Leitfaden generieren ----------
 if st.button("✨ Jetzt Leitfaden generieren"):
     try:
-        # --- Projektantworten einsammeln ---
         alle_antworten = []
         for kapitel, inhalte in daten.items():
             if isinstance(inhalte, dict):
@@ -83,19 +115,15 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             else:
                 alle_antworten.append(str(inhalte))
 
-        # --- PDF laden ---
-        kapitel_pfad = "erweiterung.pdf"
+        # PDF-Text laden
         pdf_text = ""
+        kapitel_pfad = "erweiterung.pdf"
         if os.path.exists(kapitel_pfad):
             with open(kapitel_pfad, "rb") as f:
                 pdf_reader = fitz.open(stream=f.read(), filetype="pdf")
                 for page in pdf_reader:
                     pdf_text += page.get_text()
-        else:
-            st.error("PDF-Datei 'erweiterung.pdf' nicht gefunden.")
-            st.stop()
 
-        # --- Prompt generieren ---
         prompt = (
                 "Du bist ein hochspezialisierter Marketingstratege, Vertriebsexperte und Finanzplaner mit Fokus auf analoge Spiele. "
                 "Deine Aufgabe ist es, eine umfassende, strategisch fundierte, realistisch umsetzbare und kreative Vermarktungs-, Vertriebs- und Finanzierungsstrategie "
@@ -186,8 +214,6 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 + "\n".join(alle_antworten)
                 + "\n\n📘 Fachtext:\n" + pdf_text
         )
-
-        # --- OpenAI-Antwort holen ---
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
@@ -195,33 +221,61 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         )
 
         if hasattr(response, "choices") and response.choices:
-            kapitel_text = response.choices[0].message.content
-            st.session_state.leitfaden_text = kapitel_text
+            st.session_state.leitfaden_text = response.choices[0].message.content
             st.success("Leitfaden erfolgreich generiert!")
-            st.subheader("📝 Dein KI-generierter Leitfaden")
-            st.markdown(kapitel_text)
-
-            # --- PDF generieren ---
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_auto_page_break(auto=True, margin=15)
-            pdf.set_font("Arial", size=11)
-            for line in kapitel_text.split("\n"):
-                pdf.multi_cell(0, 8, remove_non_latin1(line))
-
-            kapitel_bytes = BytesIO()
-            kapitel_bytes.write(pdf.output(dest='S').encode('latin-1'))
-            kapitel_bytes.seek(0)
-
-            st.download_button(
-                label="📥 Kapitel als PDF herunterladen",
-                data=kapitel_bytes,
-                file_name="leitfaden_auswertung.pdf",
-                mime="application/pdf"
-            )
         else:
-            st.error("Keine Antwort von der KI erhalten.")
+            st.error("Die OpenAI-API hat keine Antwort zurückgegeben.")
+            st.stop()
+
+        # Prompt speichern und mailen
+        prompt_dateipfad = f"data/{projektname}_prompt.txt"
+        with open(prompt_dateipfad, "w", encoding="utf-8") as f:
+            f.write(prompt)
+
+        sende_per_mail(prompt_dateipfad)
 
     except Exception as e:
-        st.error(f"Fehler beim Generieren oder Verarbeiten: {e}")
+        st.error(f"Fehler beim Generieren oder Senden: {e}")
         st.stop()
+
+# ---------- KI-Output + PDF-Export ----------
+if st.session_state.leitfaden_text:
+    st.subheader("📘 Dein KI-generierter Leitfaden")
+    st.markdown(st.session_state.leitfaden_text)
+
+    # PDF generieren
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=11)
+    pdf.set_font("Arial", "B", size=14)
+    pdf.cell(0, 10, remove_non_latin1("📘 KI-generierter Leitfaden"), ln=True)
+    pdf.ln(5)
+    pdf.set_font("Arial", "", size=11)
+
+    lines = st.session_state.leitfaden_text.split("\n")
+    table_buffer = []
+
+    for line in lines:
+        if "|" in line and line.count("|") >= 2:
+            table_buffer.append(line)
+        elif table_buffer:
+            render_table(pdf, table_buffer)
+            table_buffer = []
+            pdf.multi_cell(0, 8, remove_non_latin1(line))
+        else:
+            pdf.multi_cell(0, 8, remove_non_latin1(line))
+
+    if table_buffer:
+        render_table(pdf, table_buffer)
+
+    leitfaden_bytes = BytesIO()
+    leitfaden_bytes.write(pdf.output(dest='S').encode('latin-1'))
+    leitfaden_bytes.seek(0)
+
+    st.download_button(
+        label="⬇️ KI-Leitfaden als PDF herunterladen",
+        data=leitfaden_bytes,
+        file_name="leitfaden.pdf",
+        mime="application/pdf"
+    )
