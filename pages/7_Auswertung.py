@@ -210,10 +210,27 @@ if st.session_state.leitfaden_text:
             pdf.cell(0, 10, title, ln=True)
             pdf.ln(5)
 
-            pdf.set_font("Arial", "", size=11)
-            for line in st.session_state.leitfaden_text.split("\n"):
-                cleaned = remove_non_latin1(line)
-                pdf.multi_cell(0, 8, cleaned)
+            lines = st.session_state.leitfaden_text.split("\n")
+
+for line in lines:
+    cleaned = remove_non_latin1(line)
+
+    # 🔹 Tabellenzeile erkennen: Markdown-artig mit |
+    if "|" in line and line.count("|") >= 2:
+        cells = [remove_non_latin1(cell.strip()) for cell in line.split("|")[1:-1]]
+        col_width = (pdf.w - 20) / len(cells)  # etwas Rand lassen
+        pdf.set_font("Arial", "", 10)
+        for cell in cells:
+            pdf.cell(col_width, 8, cell, border=1)
+        pdf.ln()
+    else:
+        # 🔸 normale Überschrift fett machen
+        if line.strip().endswith(":"):
+            pdf.set_font("Arial", "B", 11)
+        else:
+            pdf.set_font("Arial", "", 11)
+
+        pdf.multi_cell(0, 8, cleaned)
 
             pdf_bytes = pdf.output(dest='S').encode('latin-1')
             leitfaden_bytes = BytesIO(pdf_bytes)
