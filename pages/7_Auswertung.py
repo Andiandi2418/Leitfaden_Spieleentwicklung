@@ -212,14 +212,14 @@ if st.session_state.leitfaden_text:
 
             leitfaden_bytes = BytesIO()
             pdf_bytes = pdf.output(dest='S').encode('latin1')
-leitfaden_bytes = BytesIO(pdf_bytes)
-
-st.download_button(
-    label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
-    data=leitfaden_bytes,
-    file_name="leitfaden.pdf",
-    mime="application/pdf"
-)
+            leitfaden_bytes = BytesIO(pdf_bytes)
+            
+            st.download_button(
+                label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
+                data=leitfaden_bytes,
+                file_name="leitfaden.pdf",
+                mime="application/pdf"
+            )
 
             leitfaden_bytes.seek(0)
 
