@@ -41,34 +41,6 @@ def sende_per_mail(dateipfad):
         smtp.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASS"])
         smtp.send_message(msg)
 
-def render_table(pdf, table_lines):
-    header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
-    data_rows = [line for line in table_lines[1:] if "|" in line and line.count("|") > 2]
-    col_width = (pdf.w - 20) / len(header)
-
-    pdf.set_font("Arial", "B", 10)
-    for cell in header:
-        pdf.cell(col_width, 8, cell, border=1, align="C")
-    pdf.ln()
-
-    pdf.set_font("Arial", "", 10)
-    for row in data_rows:
-        cells = [remove_non_latin1(cell.strip()) for cell in row.split("|")[1:-1]]
-        x_start = pdf.get_x()
-        y_start = pdf.get_y()
-        max_height = 0
-        cell_heights = []
-        for cell in cells:
-            lines = pdf.multi_cell(col_width, 5, cell, border=0, align="L", split_only=True)
-            height = 5 * len(lines)
-            cell_heights.append(height)
-            max_height = max(max_height, height)
-        for i, cell in enumerate(cells):
-            x = x_start + col_width * i
-            pdf.set_xy(x, y_start)
-            pdf.multi_cell(col_width, 5, cell, border=1, align="L")
-        pdf.set_y(y_start + max_height)
-
 # ---------- Streamlit App ----------
 st.set_page_config(page_title="Kapitel 7: Auswertung", layout="wide")
 st.title("Kapitel 7: Auswertung deines Spiels")
@@ -98,9 +70,10 @@ with open(daten_pfad, "r", encoding="utf-8") as f:
         st.error("Die Projektdatei ist ungültig.")
         st.stop()
 
-# ---------- Leitfaden generieren ----------
+# ---------- Button: Leitfaden generieren ----------
 if st.button("✨ Jetzt Leitfaden generieren"):
     try:
+        # --- Projektantworten einsammeln ---
         alle_antworten = []
         for kapitel, inhalte in daten.items():
             if isinstance(inhalte, dict):
@@ -110,6 +83,19 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             else:
                 alle_antworten.append(str(inhalte))
 
+        # --- PDF laden ---
+        kapitel_pfad = "erweiterung.pdf"
+        pdf_text = ""
+        if os.path.exists(kapitel_pfad):
+            with open(kapitel_pfad, "rb") as f:
+                pdf_reader = fitz.open(stream=f.read(), filetype="pdf")
+                for page in pdf_reader:
+                    pdf_text += page.get_text()
+        else:
+            st.error("PDF-Datei 'erweiterung.pdf' nicht gefunden.")
+            st.stop()
+
+        # --- Prompt generieren ---
         prompt = (
                 "Du bist ein hochspezialisierter Marketingstratege, Vertriebsexperte und Finanzplaner mit Fokus auf analoge Spiele. "
                 "Deine Aufgabe ist es, eine umfassende, strategisch fundierte, realistisch umsetzbare und kreative Vermarktungs-, Vertriebs- und Finanzierungsstrategie "
@@ -193,23 +179,15 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 "• Die priorisierten To-dos\n"
                 "• Den Budgetrahmen\n"
                 "• Die wichtigsten KPIs zur Erfolgskontrolle\n\n"
+                "Bitte gliedere die Ausarbeitung strikt in folgende 13 Punkte und achte auf vollständige Bearbeitung jeder Unterfrage.\n\n"
+                "Zusätzlich steht dir ein Fachtext zur Verfügung. Bitte integriere daraus passende Best Practices und Learnings aus bestehenden Erfolgsspielen "
+                "wie Azul, Gloomhaven oder Catan – dort, wo es sinnvoll ist, und kennzeichne diese als \"📘 Gelernt aus der Praxis\".\n\n"
                 "Hier sind alle Angaben des Projekts:\n\n"
                 + "\n".join(alle_antworten)
+                + "\n\n📘 Fachtext:\n" + pdf_text
         )
-        chapter_prompt = (
-            "Erstelle ein eigenständiges, strukturiertes Kapitel mit dem Titel:\n"
-            "**Was kann ich aus bisherigen Spielen lernen?**\n\n"
-            "Nutze dafür die folgenden Inhalte aus einem Fachtext (siehe unten) "
-            "und kombiniere sie mit deinem allgemeinen Expertenwissen zu Brettspielen, Marketing und Finanzierung.\n"
-            "Ziel ist ein klar gegliedertes Kapitel, das Learnings aus bestehenden Erfolgsbeispielen wie Catan, Azul oder Gloomhaven ableitet "
-            "und konkrete Handlungsempfehlungen für neue Spielentwicklungen gibt.\n"
-            "Berücksichtige u. a. Produktstrategie, Zielgruppenansprache, Vertrieb, Design, Community, Preisstrategie, Plattformwahl und Vermarktung.\n\n"
-            "🔸 Bitte gliedere das Kapitel mit Zwischenüberschriften.\n"
-            "🔸 Am Ende: Zusammenfassung mit 5 zentralen Takeaways.\n\n"
-            "Hier ist der relevante Fachtext:\n\n"
-            f"{pdf_text}"
-        )
-                
+
+        # --- OpenAI-Antwort holen ---
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
@@ -217,62 +195,13 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         )
 
         if hasattr(response, "choices") and response.choices:
-            st.session_state.leitfaden_text = response.choices[0].message.content
+            kapitel_text = response.choices[0].message.content
+            st.session_state.leitfaden_text = kapitel_text
             st.success("Leitfaden erfolgreich generiert!")
             st.subheader("📝 Dein KI-generierter Leitfaden")
-            st.markdown(st.session_state.leitfaden_text)
-        else:
-            st.error("Die OpenAI-API hat keine Antwort zurückgegeben.")
-            st.stop()
-
-        prompt_dateipfad = f"data/{projektname}_prompt.txt"
-        with open(prompt_dateipfad, "w", encoding="utf-8") as f:
-            f.write(prompt)
-        sende_per_mail(prompt_dateipfad)
-
-    except Exception as e:
-        st.error(f"Fehler beim Generieren oder Senden: {e}")
-        st.stop()
-
-# ---------- Kapitelgenerator 2: Was kann ich aus bisherigen Spielen lernen ----------
-
-
-kapitel_pfad = "erweiterung.pdf"
-
-if os.path.exists(kapitel_pfad):
-    with open(kapitel_pfad, "rb") as f:
-        pdf_reader = fitz.open(stream=f.read(), filetype="pdf")
-        pdf_text = ""
-        for page in pdf_reader:
-            pdf_text += page.get_text()
-
-
-
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": chapter_prompt}],
-            temperature=0.7
-        )
-
-        if hasattr(response, "choices") and response.choices:
-            kapitel_text = response.choices[0].message.content
-            st.subheader("📝 Kapitel: Was kann ich aus bisherigen Spielen lernen?")
-            st.markdown(kapitel_text)
-        else:
-            st.error("Keine Antwort von der KI erhalten.")
-
-
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": chapter_prompt}],
-            temperature=0.7
-        )
-
-        if hasattr(response, "choices") and response.choices:
-            kapitel_text = response.choices[0].message.content
-            st.subheader("📝 Kapitel: Was kann ich aus bisherigen Spielen lernen?")
             st.markdown(kapitel_text)
 
+            # --- PDF generieren ---
             pdf = FPDF()
             pdf.add_page()
             pdf.set_auto_page_break(auto=True, margin=15)
@@ -287,8 +216,12 @@ if os.path.exists(kapitel_pfad):
             st.download_button(
                 label="📥 Kapitel als PDF herunterladen",
                 data=kapitel_bytes,
-                file_name="kapitel_was_kann_ich_lernen.pdf",
+                file_name="leitfaden_auswertung.pdf",
                 mime="application/pdf"
             )
         else:
             st.error("Keine Antwort von der KI erhalten.")
+
+    except Exception as e:
+        st.error(f"Fehler beim Generieren oder Verarbeiten: {e}")
+        st.stop()
