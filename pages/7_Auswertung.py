@@ -219,6 +219,7 @@ if st.session_state.leitfaden_text:
                 data=leitfaden_bytes,
                 file_name="leitfaden.pdf",
                 mime="application/pdf"
+                key="download_leitfaden_pdf_hier"
             )
 
             leitfaden_bytes.seek(0)
@@ -228,6 +229,7 @@ if st.session_state.leitfaden_text:
                 data=leitfaden_bytes,
                 file_name="leitfaden.pdf",
                 mime="application/pdf"
+                key="download_leitfaden_pdf"
             )
 
         except Exception as e:
