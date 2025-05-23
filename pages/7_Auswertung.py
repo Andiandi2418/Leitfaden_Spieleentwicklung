@@ -183,27 +183,27 @@ if st.button("✨ Jetzt Leitfaden generieren"):
 
         sende_per_mail(prompt_dateipfad)
 
-    st.success("Leitfaden erfolgreich generiert!")
-    st.markdown(leitfaden_text)
+        st.success("Leitfaden erfolgreich generiert!")
+        st.markdown(leitfaden_text)
 
     # 📄 Separater Button zur nachträglichen PDF-Erzeugung
-    if leitfaden_text:
-        if st.button("📄 PDF aus Leitfaden erzeugen"):
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_auto_page_break(auto=True, margin=15)
-            pdf.add_font("DejaVu", "", "fonts/DejaVuSans.ttf", uni=True)
-            pdf.add_font("DejaVu", "B", "fonts/DejaVuSans-Bold.ttf", uni=True)
-            pdf.set_font("DejaVu", "B", size=14)
-            pdf.cell(0, 10, "📘 KI-generierter Leitfaden", ln=True)
-            pdf.ln(5)
-            pdf.set_font("DejaVu", "", size=11)
-            for line in leitfaden_text.split("\n"):
-                pdf.multi_cell(0, 8, line)
-
-            leitfaden_bytes = BytesIO()
-            pdf.output(leitfaden_bytes)
-            leitfaden_bytes.seek(0)
+        if leitfaden_text:
+            if st.button("📄 PDF aus Leitfaden erzeugen"):
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_auto_page_break(auto=True, margin=15)
+                pdf.add_font("DejaVu", "", "fonts/DejaVuSans.ttf", uni=True)
+                pdf.add_font("DejaVu", "B", "fonts/DejaVuSans-Bold.ttf", uni=True)
+                pdf.set_font("DejaVu", "B", size=14)
+                pdf.cell(0, 10, "📘 KI-generierter Leitfaden", ln=True)
+                pdf.ln(5)
+                pdf.set_font("DejaVu", "", size=11)
+                for line in leitfaden_text.split("\n"):
+                    pdf.multi_cell(0, 8, line)
+    
+                leitfaden_bytes = BytesIO()
+                pdf.output(leitfaden_bytes)
+                leitfaden_bytes.seek(0)
 
             st.download_button(
                 label="⬇️ PDF jetzt herunterladen",
@@ -212,5 +212,5 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 mime="application/pdf"
             )
 
-        except Exception as e:
-            st.error(f"Fehler beim Generieren oder Senden: {e}")
+    except Exception as e:
+        st.error(f"Fehler beim Generieren oder Senden: {e}")
