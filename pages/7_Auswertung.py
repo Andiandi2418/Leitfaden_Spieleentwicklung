@@ -8,7 +8,7 @@ from openai import OpenAI
 import streamlit as st
 from fpdf import FPDF
 from io import BytesIO
-
+import fitz  # PyMuPDF
 
 # ---------- Hilfsfunktionen ----------
 def clean_unicode(text):
@@ -54,28 +54,22 @@ def render_table(pdf, table_lines):
     pdf.set_font("Arial", "", 10)
     for row in data_rows:
         cells = [remove_non_latin1(cell.strip()) for cell in row.split("|")[1:-1]]
-
         x_start = pdf.get_x()
         y_start = pdf.get_y()
-
         max_height = 0
         cell_heights = []
-
         for cell in cells:
             lines = pdf.multi_cell(col_width, 5, cell, border=0, align="L", split_only=True)
             height = 5 * len(lines)
             cell_heights.append(height)
             max_height = max(max_height, height)
-
         for i, cell in enumerate(cells):
             x = x_start + col_width * i
             pdf.set_xy(x, y_start)
             pdf.multi_cell(col_width, 5, cell, border=1, align="L")
-
         pdf.set_y(y_start + max_height)
 
-
-# ---------- Setup ----------
+# ---------- Streamlit App ----------
 st.set_page_config(page_title="Kapitel 7: Auswertung", layout="wide")
 st.title("Kapitel 7: Auswertung deines Spiels")
 
@@ -203,6 +197,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 + "\n".join(alle_antworten)
         )
 
+        
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
@@ -212,11 +207,8 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         if hasattr(response, "choices") and response.choices:
             st.session_state.leitfaden_text = response.choices[0].message.content
             st.success("Leitfaden erfolgreich generiert!")
-            
-            # Leitfaden anzeigen
             st.subheader("📝 Dein KI-generierter Leitfaden")
             st.markdown(st.session_state.leitfaden_text)
-
         else:
             st.error("Die OpenAI-API hat keine Antwort zurückgegeben.")
             st.stop()
@@ -229,47 +221,62 @@ if st.button("✨ Jetzt Leitfaden generieren"):
     except Exception as e:
         st.error(f"Fehler beim Generieren oder Senden: {e}")
         st.stop()
-        
-   # ---------- KI-Output + PDF-Download ----------
-if st.session_state.leitfaden_text:
-    st.subheader("📘 Dein KI-generierter Leitfaden")
-    st.markdown(st.session_state.leitfaden_text)
 
-    # PDF generieren
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Arial", size=11)
-    pdf.set_font("Arial", "B", size=14)
-    pdf.cell(0, 10, remove_non_latin1("KI-generierter Leitfaden"), ln=True)
-    pdf.ln(5)
-    pdf.set_font("Arial", "", size=11)
+# ---------- Kapitelgenerator 2: Was kann ich aus bisherigen Spielen lernen ----------
+st.header("📘 Kapitel-Generator: Was kann ich aus bisherigen Spielen lernen?")
 
-    lines = st.session_state.leitfaden_text.split("\n")
-    table_buffer = []
+pdf_file = st.file_uploader("⬆️ Lade dein Kapitel-3-PDF hoch", type="pdf")
 
-    for line in lines:
-        if "|" in line and line.count("|") >= 2:
-            table_buffer.append(line)
-        elif table_buffer:
-            render_table(pdf, table_buffer)
-            table_buffer = []
-            pdf.multi_cell(0, 8, remove_non_latin1(line))
+if pdf_file is not None:
+    pdf_reader = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    pdf_text = ""
+    for page in pdf_reader:
+        pdf_text += page.get_text()
+
+    st.success("✅ Text aus PDF erfolgreich extrahiert!")
+
+    if st.button("📄 Kapitel generieren"):
+        chapter_prompt = (
+            "Erstelle ein eigenständiges, strukturiertes Kapitel mit dem Titel:\n"
+            "**Was kann ich aus bisherigen Spielen lernen?**\n\n"
+            "Nutze dafür die folgenden Inhalte aus einem Fachtext (siehe unten) "
+            "und kombiniere sie mit deinem allgemeinen Expertenwissen zu Brettspielen, Marketing und Finanzierung.\n"
+            "Ziel ist ein klar gegliedertes Kapitel, das Learnings aus bestehenden Erfolgsbeispielen wie Catan, Azul oder Gloomhaven ableitet "
+            "und konkrete Handlungsempfehlungen für neue Spielentwicklungen gibt.\n"
+            "Berücksichtige u. a. Produktstrategie, Zielgruppenansprache, Vertrieb, Design, Community, Preisstrategie, Plattformwahl und Vermarktung.\n\n"
+            "🔸 Bitte gliedere das Kapitel mit Zwischenüberschriften.\n"
+            "🔸 Am Ende: Zusammenfassung mit 5 zentralen Takeaways.\n\n"
+            "Hier ist der relevante Fachtext:\n\n"
+            f"{pdf_text}"
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": chapter_prompt}],
+            temperature=0.7
+        )
+
+        if hasattr(response, "choices") and response.choices:
+            kapitel_text = response.choices[0].message.content
+            st.subheader("📝 Kapitel: Was kann ich aus bisherigen Spielen lernen?")
+            st.markdown(kapitel_text)
+
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.set_font("Arial", size=11)
+            for line in kapitel_text.split("\n"):
+                pdf.multi_cell(0, 8, remove_non_latin1(line))
+
+            kapitel_bytes = BytesIO()
+            kapitel_bytes.write(pdf.output(dest='S').encode('latin-1'))
+            kapitel_bytes.seek(0)
+
+            st.download_button(
+                label="📥 Kapitel als PDF herunterladen",
+                data=kapitel_bytes,
+                file_name="kapitel_was_kann_ich_lernen.pdf",
+                mime="application/pdf"
+            )
         else:
-            pdf.multi_cell(0, 8, remove_non_latin1(line))
-
-    if table_buffer:
-        render_table(pdf, table_buffer)
-
-    leitfaden_bytes = BytesIO()
-    leitfaden_bytes.write(pdf.output(dest='S').encode('latin-1'))
-    leitfaden_bytes.seek(0)
-
-    # Nur ein Button, der direkt funktioniert
-    st.download_button(
-        label="📥 KI-Leitfaden als PDF herunterladen",
-        data=leitfaden_bytes,
-        file_name=f"{projektname}_leitfaden.pdf",
-        mime="application/pdf",
-        key="download_leitfaden"
-    )
+            st.error("Keine Antwort von der KI erhalten.")
