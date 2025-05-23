@@ -197,7 +197,6 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         st.stop()
         
 # ---------- PDF-Export ----------
-
 import unicodedata
 from fpdf import FPDF
 from io import BytesIO
@@ -210,7 +209,6 @@ def remove_non_latin1(text):
 def render_table(pdf, table_lines):
     header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
     data_rows = [line for line in table_lines[2:] if "|" in line and line.count("|") > 2]
-
     col_width = (pdf.w - 20) / len(header)
 
     pdf.set_font("Arial", "B", 10)
@@ -221,10 +219,8 @@ def render_table(pdf, table_lines):
     pdf.set_font("Arial", "", 10)
     for row in data_rows:
         cells = [remove_non_latin1(cell.strip()) for cell in row.split("|")[1:-1]]
-
         x_start = pdf.get_x()
         y_start = pdf.get_y()
-
         max_height = 0
 
         for cell in cells:
@@ -238,48 +234,47 @@ def render_table(pdf, table_lines):
 
         pdf.set_y(y_start + max_height)
 
-# Direktdownload des PDFs nach Buttonklick
+# Zeige KI-Output + PDF-Download-Button nur wenn Text existiert
 if st.session_state.leitfaden_text:
-    leitfaden_text = st.session_state.leitfaden_text
-    if st.button("📄 PDF aus Leitfaden erzeugen"):
-        try:
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_auto_page_break(auto=True, margin=15)
-            pdf.set_font("Arial", "B", size=14)
-            pdf.cell(0, 10, remove_non_latin1("📘 KI-generierter Leitfaden"), ln=True)
-            pdf.ln(5)
-            pdf.set_font("Arial", "", size=11)
+    st.subheader("📝 Dein KI-generierter Leitfaden")
+    st.markdown(st.session_state.leitfaden_text)
 
-            lines = leitfaden_text.split("\n")
+    # PDF generieren
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", "B", size=14)
+    pdf.cell(0, 10, remove_non_latin1("📘 KI-generierter Leitfaden"), ln=True)
+    pdf.ln(5)
+    pdf.set_font("Arial", "", size=11)
+
+    lines = st.session_state.leitfaden_text.split("\n")
+    table_buffer = []
+
+    for line in lines:
+        if "|" in line and line.count("|") >= 2:
+            table_buffer.append(line)
+        elif table_buffer:
+            render_table(pdf, table_buffer)
             table_buffer = []
+            pdf.multi_cell(0, 8, remove_non_latin1(line))
+        else:
+            pdf.multi_cell(0, 8, remove_non_latin1(line))
 
-            for line in lines:
-                if "|" in line and line.count("|") >= 2:
-                    table_buffer.append(line)
-                elif table_buffer:
-                    render_table(pdf, table_buffer)
-                    table_buffer = []
-                    cleaned = remove_non_latin1(line)
-                    pdf.multi_cell(0, 8, cleaned)
-                else:
-                    cleaned = remove_non_latin1(line)
-                    pdf.multi_cell(0, 8, cleaned)
+    if table_buffer:
+        render_table(pdf, table_buffer)
 
-            if table_buffer:
-                render_table(pdf, table_buffer)
+    leitfaden_bytes = BytesIO()
+    leitfaden_bytes.write(pdf.output(dest='S').encode('latin-1'))
+    leitfaden_bytes.seek(0)
 
-            leitfaden_bytes = BytesIO()
-            leitfaden_bytes.write(pdf.output(dest='S').encode('latin-1'))
-            leitfaden_bytes.seek(0)
-
-            st.download_button(
-                label="⬇️ KI-Leitfaden als PDF herunterladen",
-                data=leitfaden_bytes,
-                file_name="leitfaden.pdf",
-                mime="application/pdf",
-                key="download_leitfaden"
-            )
+    # Nur ein Download-Button
+    st.download_button(
+        label="📄 KI-Leitfaden als PDF herunterladen",
+        data=leitfaden_bytes,
+        file_name="leitfaden.pdf",
+        mime="application/pdf"
+    )
 
         except Exception as e:
             st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
