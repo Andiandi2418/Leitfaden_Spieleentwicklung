@@ -197,6 +197,9 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         st.stop()
         
 # ---------- PDF-Export ----------
+import unicodedata
+from fpdf import FPDF
+from io import BytesIO
 
 def remove_non_latin1(text):
     return ''.join(c for c in text if ord(c) < 256)
