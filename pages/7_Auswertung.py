@@ -178,6 +178,11 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         if hasattr(response, "choices") and response.choices:
             st.session_state.leitfaden_text = response.choices[0].message.content
             st.success("Leitfaden erfolgreich generiert!")
+            
+            # Leitfaden anzeigen
+            st.subheader("📝 Dein KI-generierter Leitfaden")
+            st.markdown(st.session_state.leitfaden_text)
+
         else:
             st.error("Die OpenAI-API hat keine Antwort zurückgegeben.")
             st.stop()
