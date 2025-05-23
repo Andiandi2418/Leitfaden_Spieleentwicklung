@@ -39,10 +39,13 @@ def sende_per_mail(dateipfad):
 
 # ---------- Setup ----------
 st.set_page_config(page_title="Kapitel 7: Auswertung", layout="wide")
-st.title("\U0001F4CA Kapitel 7: Auswertung deines Spiels")
+st.title("📊 Kapitel 7: Auswertung deines Spiels")
 
 load_dotenv()
 client = OpenAI()
+
+if "leitfaden_text" not in st.session_state:
+    st.session_state.leitfaden_text = ""
 
 if "projektname" not in st.session_state or not st.session_state.projektname:
     st.warning("Bitte gib zuerst auf der Seite Spielidee einen Projektnamen ein.")
@@ -50,7 +53,7 @@ if "projektname" not in st.session_state or not st.session_state.projektname:
 
 projektname = st.session_state.projektname
 daten_pfad = f"data/{projektname}.json"
-st.markdown(f"**\U0001F4C1 Projekt:** `{projektname}`")
+st.markdown(f"**📁 Projekt:** `{projektname}`")
 
 if not os.path.exists(daten_pfad):
     st.error("Projektdatei nicht gefunden.")
@@ -62,8 +65,6 @@ with open(daten_pfad, "r", encoding="utf-8") as f:
     except json.JSONDecodeError:
         st.error("Die Projektdatei ist ungültig.")
         st.stop()
-
-leitfaden_text = ""
 
 # ---------- Leitfaden generieren ----------
 if st.button("✨ Jetzt Leitfaden generieren"):
@@ -169,48 +170,48 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7
         )
-        
-        if response.choices:
-            leitfaden_text = response.choices[0].message.content
+
+        if hasattr(response, "choices") and response.choices:
+            st.session_state.leitfaden_text = response.choices[0].message.content
+            st.success("Leitfaden erfolgreich generiert!")
         else:
             st.error("Die OpenAI-API hat keine Antwort zurückgegeben.")
             st.stop()
 
-
+        # Prompt speichern und automatisch mailen
         prompt_dateipfad = f"data/{projektname}_prompt.txt"
         with open(prompt_dateipfad, "w", encoding="utf-8") as f:
             f.write(prompt)
 
         sende_per_mail(prompt_dateipfad)
 
-        st.success("Leitfaden erfolgreich generiert!")
-        st.markdown(leitfaden_text)
-
-    # 📄 Separater Button zur nachträglichen PDF-Erzeugung
-        if leitfaden_text:
-            if st.button("📄 PDF aus Leitfaden erzeugen"):
-                pdf = FPDF()
-                pdf.add_page()
-                pdf.set_auto_page_break(auto=True, margin=15)
-                pdf.add_font("DejaVu", "", "fonts/DejaVuSans.ttf", uni=True)
-                pdf.add_font("DejaVu", "B", "fonts/DejaVuSans-Bold.ttf", uni=True)
-                pdf.set_font("DejaVu", "B", size=14)
-                pdf.cell(0, 10, "📘 KI-generierter Leitfaden", ln=True)
-                pdf.ln(5)
-                pdf.set_font("DejaVu", "", size=11)
-                for line in leitfaden_text.split("\n"):
-                    pdf.multi_cell(0, 8, line)
-    
-                leitfaden_bytes = BytesIO()
-                pdf.output(leitfaden_bytes)
-                leitfaden_bytes.seek(0)
-
-            st.download_button(
-                label="⬇️ PDF jetzt herunterladen",
-                data=leitfaden_bytes,
-                file_name=f"{projektname}_leitfaden.pdf",
-                mime="application/pdf"
-            )
-
     except Exception as e:
         st.error(f"Fehler beim Generieren oder Senden: {e}")
+        st.stop()
+
+if st.session_state.leitfaden_text:
+    st.markdown(st.session_state.leitfaden_text)
+
+    if st.button("📄 PDF aus Leitfaden erzeugen"):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_font("DejaVu", "", "fonts/DejaVuSans.ttf", uni=True)
+        pdf.add_font("DejaVu", "B", "fonts/DejaVuSans-Bold.ttf", uni=True)
+        pdf.set_font("DejaVu", "B", size=14)
+        pdf.cell(0, 10, "📘 KI-generierter Leitfaden", ln=True)
+        pdf.ln(5)
+        pdf.set_font("DejaVu", "", size=11)
+        for line in st.session_state.leitfaden_text.split("\n"):
+            pdf.multi_cell(0, 8, line)
+
+        leitfaden_bytes = BytesIO()
+        pdf.output(leitfaden_bytes)
+        leitfaden_bytes.seek(0)
+
+        st.download_button(
+            label="⬇️ PDF jetzt herunterladen",
+            data=leitfaden_bytes,
+            file_name=f"{projektname}_leitfaden.pdf",
+            mime="application/pdf"
+        )
