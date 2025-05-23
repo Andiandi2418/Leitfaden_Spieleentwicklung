@@ -10,7 +10,6 @@ from fpdf import FPDF
 from io import BytesIO
 from itertools import zip_longest
 
-
 # ---------- Hilfsfunktionen ----------
 def clean_unicode(text):
     if not isinstance(text, str):
@@ -21,6 +20,9 @@ def clean_unicode(text):
         "🇯": "[ziel]", "📦": "[paket]"
     }
     return re.sub("|".join(map(re.escape, replacements)), lambda m: replacements[m.group(0)], text)
+
+def remove_non_latin1(text):
+    return ''.join(c for c in text if ord(c) < 256)
 
 def sende_per_mail(dateipfad):
     empfaenger = "meinspieleleitfaden@gmail.com"
@@ -38,6 +40,35 @@ def sende_per_mail(dateipfad):
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASS"])
         smtp.send_message(msg)
+
+def render_table(pdf, table_lines):
+    header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
+    data_rows = [line for line in table_lines[1:] if "|" in line and line.count("|") > 2]
+    col_width = (pdf.w - 20) / len(header)
+
+    pdf.set_font("Arial", "B", 10)
+    for cell in header:
+        pdf.cell(col_width, 8, cell, border=1, align="C")
+    pdf.ln()
+
+    pdf.set_font("Arial", "", 10)
+    for row in data_rows:
+        cells = [remove_non_latin1(cell.strip()) for cell in row.split("|")[1:-1]]
+        x_start = pdf.get_x()
+        y_start = pdf.get_y()
+        max_height = 0
+
+        for i, cell in enumerate(cells):
+            lines = pdf.multi_cell(col_width, 5, cell, border=0, align="L", split_only=True)
+            height = 5 * len(lines)
+            max_height = max(max_height, height)
+
+        for i, cell in enumerate(cells):
+            x = x_start + col_width * i
+            pdf.set_xy(x, y_start)
+            pdf.multi_cell(col_width, 5, cell, border=1, align="L")
+
+        pdf.set_y(y_start + max_height)
 
 # ---------- Setup ----------
 st.set_page_config(page_title="Kapitel 7: Auswertung", layout="wide")
@@ -180,103 +211,57 @@ if st.button("✨ Jetzt Leitfaden generieren"):
             st.error("Die OpenAI-API hat keine Antwort zurückgegeben.")
             st.stop()
 
-        # Prompt speichern und automatisch mailen
         prompt_dateipfad = f"data/{projektname}_prompt.txt"
         with open(prompt_dateipfad, "w", encoding="utf-8") as f:
             f.write(prompt)
-
         sende_per_mail(prompt_dateipfad)
 
     except Exception as e:
         st.error(f"Fehler beim Generieren oder Senden: {e}")
         st.stop()
 
+# ---------- Ausgabe und PDF ----------
+if st.session_state.leitfaden_text:
+    st.markdown(st.session_state.leitfaden_text)
 
-import unicodedata
-from fpdf import FPDF
-from io import BytesIO
-from itertools import zip_longest
-import streamlit as st
+    if st.button("📄 PDF aus Leitfaden erzeugen"):
+        try:
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.set_font("Arial", "B", size=14)
+            pdf.cell(0, 10, "📘 KI-generierter Leitfaden", ln=True)
+            pdf.ln(5)
+            pdf.set_font("Arial", "", size=11)
 
-# Funktion zum Entfernen nicht-latin1-kompatibler Zeichen
-def remove_non_latin1(text):
-    return ''.join(c for c in text if ord(c) < 256)
+            lines = st.session_state.leitfaden_text.split("\n")
+            table_buffer = []
 
-# Funktion zum Darstellen schöner Tabellen mit Umbruch
-def render_table(pdf, table_lines):
-    header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
-    data_rows = [line for line in table_lines[1:] if "|" in line and line.count("|") > 2]
-    col_width = (pdf.w - 20) / len(header)
+            for line in lines:
+                if "|" in line and line.count("|") >= 2:
+                    table_buffer.append(line)
+                elif table_buffer:
+                    render_table(pdf, table_buffer)
+                    table_buffer = []
+                    cleaned = remove_non_latin1(line)
+                    pdf.multi_cell(0, 8, cleaned)
+                else:
+                    cleaned = remove_non_latin1(line)
+                    pdf.multi_cell(0, 8, cleaned)
 
-    pdf.set_font("Arial", "B", 10)
-    for cell in header:
-        pdf.cell(col_width, 8, cell, border=1, align="C")
-    pdf.ln()
-
-    pdf.set_font("Arial", "", 10)
-    for row in data_rows:
-        cells = [remove_non_latin1(cell.strip()) for cell in row.split("|")[1:-1]]
-
-        x_start = pdf.get_x()
-        y_start = pdf.get_y()
-
-        max_height = 0
-        cell_heights = []
-
-        for cell in cells:
-            lines = pdf.multi_cell(col_width, 5, cell, border=0, align="L", split_only=True)
-            height = 5 * len(lines)
-            cell_heights.append(height)
-            max_height = max(max_height, height)
-
-        for i, cell in enumerate(cells):
-            x = x_start + col_width * i
-            pdf.set_xy(x, y_start)
-            pdf.multi_cell(col_width, 5, cell, border=1, align="L")
-
-        pdf.set_y(y_start + max_height)
-
-# PDF-Button + Export
-if st.button("📄 PDF aus Leitfaden erzeugen"):
-    try:
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.set_font("Arial", size=11)
-
-        pdf.set_font("Arial", "B", size=14)
-        pdf.cell(0, 10, "📘 KI-generierter Leitfaden", ln=True)
-        pdf.ln(5)
-        pdf.set_font("Arial", "", size=11)
-
-        lines = st.session_state.leitfaden_text.split("\n")
-        table_buffer = []
-
-        for line in lines:
-            if "|" in line and line.count("|") >= 2:
-                table_buffer.append(line)
-            elif table_buffer:
+            if table_buffer:
                 render_table(pdf, table_buffer)
-                table_buffer = []
-                cleaned = remove_non_latin1(line)
-                pdf.multi_cell(0, 8, cleaned)
-            else:
-                cleaned = remove_non_latin1(line)
-                pdf.multi_cell(0, 8, cleaned)
 
-        if table_buffer:
-            render_table(pdf, table_buffer)
+            leitfaden_bytes = BytesIO()
+            pdf.output(leitfaden_bytes)
+            leitfaden_bytes.seek(0)
 
-        leitfaden_bytes = BytesIO()
-        pdf.output(leitfaden_bytes)
-        leitfaden_bytes.seek(0)
+            st.download_button(
+                label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
+                data=leitfaden_bytes,
+                file_name="leitfaden.pdf",
+                mime="application/pdf"
+            )
 
-        st.download_button(
-            label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
-            data=leitfaden_bytes,
-            file_name="leitfaden.pdf",
-            mime="application/pdf"
-        )
-
-    except Exception as e:
-        st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
+        except Exception as e:
+            st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
