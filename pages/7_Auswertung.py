@@ -218,7 +218,7 @@ if st.session_state.leitfaden_text:
                 label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
                 data=leitfaden_bytes,
                 file_name="leitfaden.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
                 key="download_leitfaden_pdf_hier"
             )
 
@@ -228,7 +228,7 @@ if st.session_state.leitfaden_text:
                 label="⬇️ Nur KI-Leitfaden als PDF herunterladen",
                 data=leitfaden_bytes,
                 file_name="leitfaden.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
                 key="download_leitfaden_pdf"
             )
 
