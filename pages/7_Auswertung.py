@@ -144,7 +144,10 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 "– kritische Erfolgsfaktoren und typische Fehlerquellen benennen,\n"
                 "– bei allen relevanten Punkten mit konkreten Beispielen, Formulierungen, Tabellen, Templates oder Zeitplänen arbeiten,\n"
                 "– keine allgemeinen Aussagen machen, sondern individuell auf das Projekt bezogen sein.\n"
-                "Bitte gliedere die Ausarbeitung strikt in folgende 13 Punkte und achte auf vollständige Bearbeitung jeder Unterfrage:\n"
+                "Bitte gliedere die Ausarbeitung strikt in folgende 13 Punkte und achte auf vollständige Bearbeitung jeder Unterfrage. \n"
+                "❗Erstelle bitte alle 13 Kapitel vollständig und in einem einzigen Durchgang – ohne Aufteilung auf mehrere Antworten. \n"
+                "Gib keine Einleitung, Vorbemerkung oder Staffelung aus. Beginne direkt mit dem ersten Kapitel und fahre lückenlos bis Kapitel 13 fort.\n"
+
                 "________________________________________\n"
                 "1. Situationsanalyse\n"
                 "– Marktanalyse: Trends, Nischen, Chancen & Risiken (z. B. Hybridspiele, Nachhaltigkeit, Bildung)\n"
