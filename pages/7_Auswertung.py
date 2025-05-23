@@ -189,6 +189,13 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         st.error(f"Fehler beim Generieren oder Senden: {e}")
         st.stop()
 
+
+import unicodedata
+
+def remove_non_latin1(text):
+    return ''.join(c for c in text if ord(c) < 256)
+
+
 # ---------- Ausgabe und PDF ----------
 if st.session_state.leitfaden_text:
     st.markdown(st.session_state.leitfaden_text)
@@ -205,7 +212,9 @@ if st.session_state.leitfaden_text:
 
             pdf.set_font("Arial", "", size=11)
             for line in st.session_state.leitfaden_text.split("\n"):
-                pdf.multi_cell(0, 8, line)
+                cleaned = remove_non_latin1(line)
+                pdf.multi_cell(0, 8, cleaned)
+
 
             leitfaden_bytes = BytesIO()
             pdf.output(leitfaden_bytes)
