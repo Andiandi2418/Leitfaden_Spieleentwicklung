@@ -218,11 +218,6 @@ if st.button("✨ Jetzt Leitfaden generieren"):
                 "Gib am Ende deiner Ausarbeitung eine eigenständige Sektion mit genau fünf **Best-Practice-Tipps** aus. Jeder Tipp soll:\n"
                 "– konkret auf das vorliegende Projekt zugeschnitten sein,  \n"
                 "– entweder aus dem Fachtext stammen oder durch dein Expertenwissen ergänzt werden,  \n"
-                "– und wie folgt gekennzeichnet werden:\n"
-                "📘 **Best Practice #1**: [Titel]  \n"
-                "Kurze Beschreibung inkl. Bezug zum Projekt und (wenn zutreffend) Spielquelle aus dem PDF.\n"
-                "Wiederhole dieses Format bis:\n"
-                "📘 **Best Practice #5**: …\n"
                 "Hier sind alle Angaben des Projekts:\n\n"
                 + "\n".join(alle_antworten)
                 + "\n\n📘 Fachtext:\n" + pdf_text
