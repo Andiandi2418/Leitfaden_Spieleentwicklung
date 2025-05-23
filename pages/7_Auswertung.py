@@ -215,10 +215,9 @@ if st.session_state.leitfaden_text:
                 cleaned = remove_non_latin1(line)
                 pdf.multi_cell(0, 8, cleaned)
 
-
-            leitfaden_bytes = BytesIO()
-            pdf.output(leitfaden_bytes)
-            leitfaden_bytes.seek(0)
+            # PDF als String erzeugen
+            pdf_string = pdf.output(dest='S').encode('latin-1')
+            leitfaden_bytes = BytesIO(pdf_string)
 
             st.download_button(
                 label="⬇️ PDF jetzt herunterladen",
@@ -228,4 +227,3 @@ if st.session_state.leitfaden_text:
             )
         except Exception as e:
             st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
-
