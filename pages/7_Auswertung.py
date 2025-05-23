@@ -40,10 +40,42 @@ def sende_per_mail(dateipfad):
 def remove_non_latin1(text):
     return ''.join(c for c in text if ord(c) < 256)
 
-# ---------- Setup ----------
-st.set_page_config(page_title="Kapitel 7: Auswertung", layout="wide")
-st.title("📊 Kapitel 7: Auswertung deines Spiels")
+def render_table(pdf, table_lines):
+    header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
+    data_rows = [line for line in table_lines[1:] if "|" in line and line.count("|") > 2]
+    col_width = (pdf.w - 20) / len(header)
 
+    pdf.set_font("Arial", "B", 10)
+    for cell in header:
+        pdf.cell(col_width, 8, cell, border=1, align="C")
+    pdf.ln()
+
+    pdf.set_font("Arial", "", 10)
+    for row in data_rows:
+        cells = [remove_non_latin1(cell.strip()) for cell in row.split("|")[1:-1]]
+
+        x_start = pdf.get_x()
+        y_start = pdf.get_y()
+
+        max_height = 0
+        cell_heights = []
+
+        for cell in cells:
+            lines = pdf.multi_cell(col_width, 5, cell, border=0, align="L", split_only=True)
+            height = 5 * len(lines)
+            cell_heights.append(height)
+            max_height = max(max_height, height)
+
+        for i, cell in enumerate(cells):
+            x = x_start + col_width * i
+            pdf.set_xy(x, y_start)
+            pdf.multi_cell(col_width, 5, cell, border=1, align="L")
+
+        pdf.set_y(y_start + max_height)
+
+# ---------- App-Konfiguration ----------
+st.set_page_config(page_title="Kapitel 7: Auswertung", layout="wide")
+st.title("\ud83d\udcca Kapitel 7: Auswertung deines Spiels")
 load_dotenv()
 client = OpenAI()
 
@@ -56,7 +88,7 @@ if "projektname" not in st.session_state or not st.session_state.projektname:
 
 projektname = st.session_state.projektname
 daten_pfad = f"data/{projektname}.json"
-st.markdown(f"**📁 Projekt:** `{projektname}`")
+st.markdown(f"**\ud83d\udcc1 Projekt:** `{projektname}`")
 
 if not os.path.exists(daten_pfad):
     st.error("Projektdatei nicht gefunden.")
@@ -66,9 +98,8 @@ with open(daten_pfad, "r", encoding="utf-8") as f:
     try:
         daten = json.load(f)
     except json.JSONDecodeError:
-        st.error("Die Projektdatei ist ungültig.")
+        st.error("Die Projektdatei ist ung\xfcltig.")
         st.stop()
-
 
 # ---------- Leitfaden generieren ----------
 if st.button("✨ Jetzt Leitfaden generieren"):
@@ -197,44 +228,8 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         st.stop()
         
 # ---------- PDF-Export ----------
-import unicodedata
-from fpdf import FPDF
-from io import BytesIO
-
-def remove_non_latin1(text):
-    return ''.join(c for c in text if ord(c) < 256)
-
-def render_table(pdf, table_lines):
-    header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
-    data_rows = [line for line in table_lines[2:] if "|" in line and line.count("|") > 2]
-    col_width = (pdf.w - 20) / len(header)
-
-    pdf.set_font("Arial", "B", 10)
-    for cell in header:
-        pdf.cell(col_width, 8, cell, border=1, align="C")
-    pdf.ln()
-
-    pdf.set_font("Arial", "", 10)
-    for row in data_rows:
-        cells = [remove_non_latin1(cell.strip()) for cell in row.split("|")[1:-1]]
-        x_start = pdf.get_x()
-        y_start = pdf.get_y()
-        max_height = 0
-
-        for cell in cells:
-            lines = pdf.multi_cell(col_width, 5, cell, border=0, align="L", split_only=True)
-            max_height = max(max_height, 5 * len(lines))
-
-        for i, cell in enumerate(cells):
-            x = x_start + col_width * i
-            pdf.set_xy(x, y_start)
-            pdf.multi_cell(col_width, 5, cell, border=1, align="L")
-
-        pdf.set_y(y_start + max_height)
-
-# Leitfaden anzeigen + PDF erzeugen
 if st.session_state.leitfaden_text:
-    st.subheader("📝 Dein KI-generierter Leitfaden")
+    st.subheader("\ud83d\udcda Dein KI-generierter Leitfaden")
     st.markdown(st.session_state.leitfaden_text)
 
     try:
@@ -242,7 +237,7 @@ if st.session_state.leitfaden_text:
         pdf.add_page()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.set_font("Arial", "B", size=14)
-        pdf.cell(0, 10, "📘 KI-generierter Leitfaden", ln=True)
+        pdf.cell(0, 10, remove_non_latin1("KI-generierter Leitfaden"), ln=True)
         pdf.ln(5)
         pdf.set_font("Arial", "", size=11)
 
@@ -263,11 +258,12 @@ if st.session_state.leitfaden_text:
             render_table(pdf, table_buffer)
 
         leitfaden_bytes = BytesIO()
-        leitfaden_bytes.write(pdf.output(dest='S').encode('latin-1'))
+        pdf_output = pdf.output(dest='S').encode('latin-1')
+        leitfaden_bytes.write(pdf_output)
         leitfaden_bytes.seek(0)
 
         st.download_button(
-            label="📄 KI-Leitfaden als PDF herunterladen",
+            label="\ud83d\udcbe KI-Leitfaden als PDF herunterladen",
             data=leitfaden_bytes,
             file_name="leitfaden.pdf",
             mime="application/pdf"
