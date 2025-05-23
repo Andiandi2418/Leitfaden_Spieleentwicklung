@@ -230,13 +230,18 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         st.error(f"Fehler beim Generieren oder Senden: {e}")
         st.stop()
         
+   # ---------- KI-Output + PDF-Download ----------
+if st.session_state.leitfaden_text:
+    st.subheader("📘 Dein KI-generierter Leitfaden")
+    st.markdown(st.session_state.leitfaden_text)
+
     # PDF generieren
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_font("Arial", size=11)
     pdf.set_font("Arial", "B", size=14)
-    pdf.cell(0, 10, remove_non_latin1("📘 KI-generierter Leitfaden"), ln=True)
+    pdf.cell(0, 10, remove_non_latin1("KI-generierter Leitfaden"), ln=True)
     pdf.ln(5)
     pdf.set_font("Arial", "", size=11)
 
@@ -260,9 +265,11 @@ if st.button("✨ Jetzt Leitfaden generieren"):
     leitfaden_bytes.write(pdf.output(dest='S').encode('latin-1'))
     leitfaden_bytes.seek(0)
 
+    # Nur ein Button, der direkt funktioniert
     st.download_button(
-        label="⬇️ KI-Leitfaden als PDF herunterladen",
+        label="📥 KI-Leitfaden als PDF herunterladen",
         data=leitfaden_bytes,
-        file_name="leitfaden.pdf",
-        mime="application/pdf"
+        file_name=f"{projektname}_leitfaden.pdf",
+        mime="application/pdf",
+        key="download_leitfaden"
     )
