@@ -265,7 +265,7 @@ if st.session_state.leitfaden_text:
                 render_table(pdf, table_buffer)
 
             leitfaden_bytes = BytesIO()
-            pdf.output(leitfaden_bytes, "F")
+            leitfaden_bytes.write(pdf.output(dest='S').encode('latin-1'))
             leitfaden_bytes.seek(0)
 
             st.download_button(
