@@ -234,22 +234,7 @@ if os.path.exists(kapitel_pfad):
         for page in pdf_reader:
             pdf_text += page.get_text()
 
-   
-    
-    if st.button("📄 Kapitel generieren"):
-        chapter_prompt = (
-            "Erstelle ein eigenständiges, strukturiertes Kapitel mit dem Titel:\n"
-            "**Was kann ich aus bisherigen Spielen lernen?**\n\n"
-            "Nutze dafür die folgenden Inhalte aus einem Fachtext (siehe unten) "
-            "und kombiniere sie mit deinem allgemeinen Expertenwissen zu Brettspielen, Marketing und Finanzierung.\n"
-            "Ziel ist ein klar gegliedertes Kapitel, das Learnings aus bestehenden Erfolgsbeispielen wie Catan, Azul oder Gloomhaven ableitet "
-            "und konkrete Handlungsempfehlungen für neue Spielentwicklungen gibt.\n"
-            "Berücksichtige u. a. Produktstrategie, Zielgruppenansprache, Vertrieb, Design, Community, Preisstrategie, Plattformwahl und Vermarktung.\n\n"
-            "🔸 Bitte gliedere das Kapitel mit Zwischenüberschriften.\n"
-            "🔸 Am Ende: Zusammenfassung mit 5 zentralen Takeaways.\n\n"
-            "Hier ist der relevante Fachtext:\n\n"
-            f"{pdf_text}"
-        )
+
 
         response = client.chat.completions.create(
             model="gpt-4o",
