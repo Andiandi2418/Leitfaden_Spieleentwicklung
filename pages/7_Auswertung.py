@@ -225,7 +225,21 @@ if st.button("✨ Jetzt Leitfaden generieren"):
 # ---------- Kapitelgenerator 2: Was kann ich aus bisherigen Spielen lernen ----------
 st.header("📘 Kapitel-Generator: Was kann ich aus bisherigen Spielen lernen?")
 
-pdf_file = st.file_uploader("⬆️ Lade dein Kapitel-3-PDF hoch", type="pdf")
+kapitel_pfad = "erweiterung.pdf"
+
+if os.path.exists(kapitel_pfad):
+    with open(kapitel_pfad, "rb") as f:
+        pdf_reader = fitz.open(stream=f.read(), filetype="pdf")
+        pdf_text = ""
+        for page in pdf_reader:
+            pdf_text += page.get_text()
+
+    st.success("📄 Kapitel 3 wurde automatisch geladen.")
+    
+    if st.button("📄 Kapitel generieren"):
+        # Hier dein Prompt mit pdf_text verwenden
+else:
+    st.error("❗ Datei erweiterung.pdf wurde nicht gefunden.")
 
 if pdf_file is not None:
     pdf_reader = fitz.open(stream=pdf_file.read(), filetype="pdf")
