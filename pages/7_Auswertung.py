@@ -276,5 +276,5 @@ if st.session_state.leitfaden_text:
         mime="application/pdf"
     )
 
-        except Exception as e:
-            st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
+ except Exception as e:
+     st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
