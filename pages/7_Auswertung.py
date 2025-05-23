@@ -265,13 +265,6 @@ if os.path.exists(kapitel_pfad):
             st.error("Keine Antwort von der KI erhalten.")
 
 
-if pdf_file is not None:
-    pdf_reader = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    pdf_text = ""
-    for page in pdf_reader:
-        pdf_text += page.get_text()
-
-    st.success("✅ Text aus PDF erfolgreich extrahiert!")
 
     if st.button("📄 Kapitel generieren"):
         chapter_prompt = (
