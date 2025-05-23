@@ -9,6 +9,7 @@ import streamlit as st
 from fpdf import FPDF
 from io import BytesIO
 
+
 # ---------- Hilfsfunktionen ----------
 def clean_unicode(text):
     if not isinstance(text, str):
@@ -19,6 +20,9 @@ def clean_unicode(text):
         "🇯": "[ziel]", "📦": "[paket]"
     }
     return re.sub("|".join(map(re.escape, replacements)), lambda m: replacements[m.group(0)], text)
+
+def remove_non_latin1(text):
+    return ''.join(c for c in text if ord(c) < 256)
 
 def sende_per_mail(dateipfad):
     empfaenger = "meinspieleleitfaden@gmail.com"
@@ -36,9 +40,6 @@ def sende_per_mail(dateipfad):
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASS"])
         smtp.send_message(msg)
-
-def remove_non_latin1(text):
-    return ''.join(c for c in text if ord(c) < 256)
 
 def render_table(pdf, table_lines):
     header = [remove_non_latin1(cell.strip()) for cell in table_lines[0].split("|")[1:-1]]
@@ -73,9 +74,11 @@ def render_table(pdf, table_lines):
 
         pdf.set_y(y_start + max_height)
 
-# ---------- App-Konfiguration ----------
+
+# ---------- Setup ----------
 st.set_page_config(page_title="Kapitel 7: Auswertung", layout="wide")
-st.title("\ud83d\udcca Kapitel 7: Auswertung deines Spiels")
+st.title("Kapitel 7: Auswertung deines Spiels")
+
 load_dotenv()
 client = OpenAI()
 
@@ -88,7 +91,7 @@ if "projektname" not in st.session_state or not st.session_state.projektname:
 
 projektname = st.session_state.projektname
 daten_pfad = f"data/{projektname}.json"
-st.markdown(f"**\ud83d\udcc1 Projekt:** `{projektname}`")
+st.markdown(f"**📁 Projekt:** `{projektname}`")
 
 if not os.path.exists(daten_pfad):
     st.error("Projektdatei nicht gefunden.")
@@ -98,7 +101,7 @@ with open(daten_pfad, "r", encoding="utf-8") as f:
     try:
         daten = json.load(f)
     except json.JSONDecodeError:
-        st.error("Die Projektdatei ist ung\xfcltig.")
+        st.error("Die Projektdatei ist ungültig.")
         st.stop()
 
 # ---------- Leitfaden generieren ----------
@@ -227,47 +230,39 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         st.error(f"Fehler beim Generieren oder Senden: {e}")
         st.stop()
         
-# ---------- PDF-Export ----------
-if st.session_state.leitfaden_text:
-    st.subheader("\ud83d\udcda Dein KI-generierter Leitfaden")
-    st.markdown(st.session_state.leitfaden_text)
+    # PDF generieren
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Arial", size=11)
+    pdf.set_font("Arial", "B", size=14)
+    pdf.cell(0, 10, remove_non_latin1("📘 KI-generierter Leitfaden"), ln=True)
+    pdf.ln(5)
+    pdf.set_font("Arial", "", size=11)
 
-    try:
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.set_font("Arial", "B", size=14)
-        pdf.cell(0, 10, remove_non_latin1("KI-generierter Leitfaden"), ln=True)
-        pdf.ln(5)
-        pdf.set_font("Arial", "", size=11)
+    lines = st.session_state.leitfaden_text.split("\n")
+    table_buffer = []
 
-        lines = st.session_state.leitfaden_text.split("\n")
-        table_buffer = []
-
-        for line in lines:
-            if "|" in line and line.count("|") >= 2:
-                table_buffer.append(line)
-            elif table_buffer:
-                render_table(pdf, table_buffer)
-                table_buffer = []
-                pdf.multi_cell(0, 8, remove_non_latin1(line))
-            else:
-                pdf.multi_cell(0, 8, remove_non_latin1(line))
-
-        if table_buffer:
+    for line in lines:
+        if "|" in line and line.count("|") >= 2:
+            table_buffer.append(line)
+        elif table_buffer:
             render_table(pdf, table_buffer)
+            table_buffer = []
+            pdf.multi_cell(0, 8, remove_non_latin1(line))
+        else:
+            pdf.multi_cell(0, 8, remove_non_latin1(line))
 
-        leitfaden_bytes = BytesIO()
-        pdf_output = pdf.output(dest='S').encode('latin-1')
-        leitfaden_bytes.write(pdf_output)
-        leitfaden_bytes.seek(0)
+    if table_buffer:
+        render_table(pdf, table_buffer)
 
-        st.download_button(
-            label="\ud83d\udcbe KI-Leitfaden als PDF herunterladen",
-            data=leitfaden_bytes,
-            file_name="leitfaden.pdf",
-            mime="application/pdf"
-        )
+    leitfaden_bytes = BytesIO()
+    leitfaden_bytes.write(pdf.output(dest='S').encode('latin-1'))
+    leitfaden_bytes.seek(0)
 
-    except Exception as e:
-        st.error(f"Fehler beim Erzeugen der PDF-Datei: {e}")
+    st.download_button(
+        label="⬇️ KI-Leitfaden als PDF herunterladen",
+        data=leitfaden_bytes,
+        file_name="leitfaden.pdf",
+        mime="application/pdf"
+    )
