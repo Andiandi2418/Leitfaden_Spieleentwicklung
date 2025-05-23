@@ -223,7 +223,7 @@ if st.button("✨ Jetzt Leitfaden generieren"):
         st.stop()
 
 # ---------- Kapitelgenerator 2: Was kann ich aus bisherigen Spielen lernen ----------
-st.header("📘 Kapitel-Generator: Was kann ich aus bisherigen Spielen lernen?")
+
 
 kapitel_pfad = "erweiterung.pdf"
 
@@ -234,7 +234,7 @@ if os.path.exists(kapitel_pfad):
         for page in pdf_reader:
             pdf_text += page.get_text()
 
-    st.success("📄 Kapitel 3 wurde automatisch geladen.")
+   
     
     if st.button("📄 Kapitel generieren"):
         chapter_prompt = (
